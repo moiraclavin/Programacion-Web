@@ -1,0 +1,27 @@
+.split {
+  display: grid;
+  gap: var(--space-10);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-5);
+}
+
+.media {
+  border-radius: var(--radius-sm);
+}
+
+@media (min-width: 960px) {
+  .split {
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: var(--space-16);
+  }
+
+  .reverse .media {
+    order: -1;
+  }
+}

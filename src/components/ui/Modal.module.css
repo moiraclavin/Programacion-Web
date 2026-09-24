@@ -1,0 +1,124 @@
+/* Mobile: bottom sheet pegado abajo, a todo el ancho. */
+.dialog {
+  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  margin: auto 0 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.dialog::backdrop {
+  background: var(--color-overlay);
+}
+
+.dialog[open] {
+  animation: sheet-in var(--duration-base) var(--ease-out);
+}
+
+.dialog[open]::backdrop {
+  animation: fade-in var(--duration-base) var(--ease-out);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-height: 90dvh;
+  overflow-y: auto;
+  padding: var(--space-6) var(--gutter) calc(var(--space-6) + env(safe-area-inset-bottom));
+  background: var(--color-surface);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: var(--shadow-lg);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.title {
+  font-size: var(--text-xl);
+  font-weight: var(--font-weight-medium);
+}
+
+.description {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: var(--tap-target);
+  height: var(--tap-target);
+  margin: calc(var(--space-3) * -1) calc(var(--space-3) * -1) 0 0;
+  border-radius: var(--radius-pill);
+  color: var(--color-text-muted);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+@media (hover: hover) {
+  .close:hover {
+    background: var(--color-surface-muted);
+    color: var(--color-text);
+  }
+}
+
+.body {
+  font-size: var(--text-base);
+}
+
+.footer {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--space-3);
+}
+
+/* Desde 640px: modal centrado. */
+@media (min-width: 640px) {
+  .dialog {
+    width: min(100% - 2 * var(--gutter), 30rem);
+    margin: auto;
+  }
+
+  .dialog[open] {
+    animation-name: pop-in;
+  }
+
+  .panel {
+    max-height: 85dvh;
+    padding: var(--space-8);
+    border-radius: var(--radius-lg);
+  }
+
+  .footer {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}

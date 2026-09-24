@@ -1,0 +1,148 @@
+/* Sin backdrop-filter a propósito: crearía un nuevo contexto para el menú position:fixed. */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  height: var(--header-height);
+}
+
+.logo {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* ── Desktop ───────────────────────────────────────────── */
+
+.desktopNav,
+.loginDesktop {
+  display: none;
+}
+
+.navList {
+  display: flex;
+  gap: var(--space-8);
+  padding: 0;
+  list-style: none;
+}
+
+.navLink {
+  padding-block: var(--space-2);
+  border-bottom: 1px solid transparent;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+@media (hover: hover) {
+  .navLink:hover {
+    color: var(--color-text);
+  }
+}
+
+/* NavLink agrega aria-current="page" al link activo. */
+.navLink[aria-current='page'] {
+  color: var(--color-text);
+  border-bottom-color: var(--color-ink);
+}
+
+/* ── Mobile ────────────────────────────────────────────── */
+
+.menuButton {
+  display: grid;
+  place-items: center;
+  width: var(--tap-target);
+  height: var(--tap-target);
+  margin-right: calc(var(--space-3) * -1);
+}
+
+.mobileMenu {
+  position: fixed;
+  inset: var(--header-height) 0 0;
+  z-index: var(--z-header);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+  padding: var(--space-8) var(--gutter) calc(var(--space-8) + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  background: var(--color-bg);
+  animation: menu-in var(--duration-base) var(--ease-out);
+}
+
+/* display:flex pisa al atributo hidden, así que hay que reforzarlo. */
+.mobileMenu[hidden] {
+  display: none;
+}
+
+.mobileList {
+  padding: 0;
+  list-style: none;
+}
+
+.mobileLink {
+  display: block;
+  padding-block: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-light);
+  text-decoration: none;
+}
+
+.mobileLink[aria-current='page'] {
+  font-weight: var(--font-weight-medium);
+}
+
+.mobileFooter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: auto;
+}
+
+.mobileContact {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+@media (min-width: 960px) {
+  .desktopNav {
+    display: block;
+  }
+
+  .loginDesktop {
+    display: inline-flex;
+  }
+
+  .menuButton,
+  .mobileMenu {
+    display: none;
+  }
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}

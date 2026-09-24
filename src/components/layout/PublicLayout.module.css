@@ -1,0 +1,30 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.main {
+  flex: 1;
+}
+
+.main:focus {
+  outline: none;
+}
+
+/* Link para usuarios de teclado: invisible hasta que recibe foco. */
+.skipLink {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: calc(var(--z-header) + 1);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-ink);
+  color: var(--color-bone);
+  font-size: var(--text-sm);
+  transform: translateY(-200%);
+}
+
+.skipLink:focus {
+  transform: none;
+}

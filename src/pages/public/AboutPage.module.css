@@ -1,0 +1,18 @@
+.section {
+  padding-bottom: var(--section-space);
+}
+
+.sectionMuted {
+  padding-block: var(--section-space);
+  background: var(--color-surface-muted);
+}
+
+.storyTitle {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-light);
+}
+
+.paragraph {
+  max-width: 50ch;
+  color: var(--color-text-muted);
+}

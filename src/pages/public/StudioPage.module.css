@@ -1,0 +1,62 @@
+.spaces {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  padding-bottom: var(--section-space);
+}
+
+.spaceTitle {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-light);
+}
+
+.spaceText {
+  max-width: 44ch;
+  color: var(--color-text-muted);
+}
+
+.amenities {
+  padding-block: var(--section-space);
+  background: var(--color-surface-muted);
+}
+
+.amenityList {
+  display: grid;
+  padding: 0;
+  list-style: none;
+}
+
+.amenity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding-block: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Punto sage como viñeta. */
+.amenity::before {
+  content: '';
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+@media (min-width: 640px) {
+  .amenityList {
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: var(--space-8);
+  }
+}
+
+@media (min-width: 960px) {
+  .spaces {
+    gap: var(--space-24);
+  }
+
+  .amenityList {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

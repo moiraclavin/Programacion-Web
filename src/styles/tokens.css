@@ -1,0 +1,106 @@
+/*
+ * Design tokens del estudio.
+ * Todo color, tamaño o espaciado que usen los componentes sale de acá.
+ *
+ * Breakpoints (las custom properties no funcionan dentro de @media,
+ * así que se escriben a mano en cada módulo):
+ *   sm  ≥ 640px   tablet / celular horizontal
+ *   md  ≥ 960px   desktop
+ */
+
+:root {
+  /* ── Paleta base ─────────────────────────────────────────── */
+  --color-white: #ffffff;
+  --color-bone: #faf8f5;
+  --color-sand-light: #f2ede6;
+  --color-sand: #e8e1d7;
+  --color-stone: #a8a29a;       /* decorativo: íconos, líneas */
+  --color-stone-mid: #8f8880;   /* bordes de inputs (≥ 3:1 sobre blanco) */
+  --color-stone-deep: #6f6a63;  /* texto secundario (≥ 4.5:1 sobre bone) */
+  --color-ink-soft: #45413c;
+  --color-ink: #2b2926;
+  --color-sage-light: #e3e8e1;
+  --color-sage: #9ba89a;
+  --color-sage-deep: #56644f;
+  --color-wheat: #f1e6cc;
+  --color-wheat-deep: #6b5424;
+  --color-clay-light: #f3e3dc;
+  --color-clay: #9a4a36;
+
+  /* ── Roles semánticos (usar estos en los componentes) ────── */
+  --color-bg: var(--color-bone);
+  --color-surface: var(--color-white);
+  --color-surface-muted: var(--color-sand-light);
+  --color-text: var(--color-ink);
+  --color-text-muted: var(--color-stone-deep);
+  --color-border: var(--color-sand);
+  --color-border-strong: var(--color-stone-mid);
+  --color-accent: var(--color-sage);
+  --color-danger: var(--color-clay);
+  --color-focus: var(--color-ink);
+  --color-overlay: rgb(43 41 38 / 0.45);
+
+  /* ── Tipografía ──────────────────────────────────────────── */
+  --font-sans: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: clamp(1.5rem, 1.2rem + 1.5vw, 2rem);
+  --text-3xl: clamp(2rem, 1.5rem + 2.5vw, 3rem);
+  --text-display: clamp(2.5rem, 1.6rem + 4.5vw, 4.5rem);
+
+  --leading-tight: 1.15;
+  --leading-snug: 1.35;
+  --leading-normal: 1.6;
+
+  --tracking-tight: -0.01em;
+  --tracking-wide: 0.08em;
+  --tracking-wider: 0.16em;
+
+  /* ── Espaciado (base 4px) ────────────────────────────────── */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-24: 6rem;
+
+  /* ── Layout ──────────────────────────────────────────────── */
+  --container-max: 72rem;
+  --container-narrow: 40rem;
+  --gutter: clamp(1.25rem, 5vw, 3rem);
+  --tap-target: 44px;
+  --header-height: 4rem;
+  --section-space: clamp(4rem, 3rem + 5vw, 7rem);
+
+  /* ── Formas y profundidad ────────────────────────────────── */
+  --radius-sm: 2px;
+  --radius-md: 6px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgb(43 41 38 / 0.06);
+  --shadow-lg: 0 24px 48px -12px rgb(43 41 38 / 0.18);
+
+  /* ── Movimiento ──────────────────────────────────────────── */
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* ── Capas ───────────────────────────────────────────────── */
+  --z-header: 10;
+  --z-modal: 100;
+}
