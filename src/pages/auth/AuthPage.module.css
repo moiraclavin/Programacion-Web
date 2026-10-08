@@ -1,0 +1,44 @@
+/* Estilos compartidos por las pantallas de login, recuperar y crear contraseña. */
+
+.root {
+  max-width: 26rem;
+  padding-bottom: var(--section-space);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.alert {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-clay-light);
+  color: var(--color-clay);
+  font-size: var(--text-sm);
+}
+
+.notice {
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-sage-light);
+  color: var(--color-sage-deep);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.center {
+  display: grid;
+  place-items: center;
+  padding-block: var(--space-16);
+}

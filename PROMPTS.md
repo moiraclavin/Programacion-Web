@@ -286,3 +286,101 @@ Los textos quedaron separados en `src/content/` para poder editarlos sin tocar l
 > si, subilo a github
 
 **Respuesta:** Hizo un commit con `PROMPTS.md` y lo subió con `git push` a la rama `main` del repositorio `moiraclavin/Programacion-Web` en GitHub.
+
+---
+
+## 8. Conexión con Supabase — 01/10/2026
+
+**Prompt 34**
+> ahora quiero me ayudes a conectar con el cli de supabase
+
+**Respuesta:** Instaló la CLI de Supabase con Homebrew (versión 2.119.0) y corrió `supabase init`, que creó la carpeta `supabase/` con el archivo `config.toml`. Para vincular el proyecto falta iniciar sesión con `supabase login`, que tiene que hacer la dueña de la cuenta, y crear el proyecto en supabase.com si todavía no existe. También preguntó si Supabase reemplaza el backend con Node.js + Express que se había decidido antes.
+
+**Prompt 35**
+> si ahora quiero usar supabase, no entinedo bien porque ahora no se puede usar node.js
+
+**Respuesta:** Aclaró que Node.js se sigue usando: con él corren Vite, `npm run dev` y el build. Lo que reemplaza Supabase es el servidor Express que había que programar, porque ya trae la base de datos (Postgres), el login y una API para leer y guardar datos. La decisión quedó registrada: el backend pasa a ser Supabase.
+
+**Prompt 36**
+> ya tengo el proyecto
+
+**Respuesta:** Intentó listar los proyectos de Supabase, pero la CLI todavía no tenía la sesión iniciada. Pidió correr `! supabase login` en el chat para poder ver el proyecto y conectarlo.
+
+**Prompt 37** (comando corrido desde el chat)
+> ! supabase login
+
+**Respuesta:** El comando falló porque el chat no es una terminal interactiva y `supabase login` necesita una. La solución fue correrlo en la terminal de VS Code, así el token de acceso se guarda en la computadora y no queda escrito en el chat.
+
+**Prompt 38**
+> listo ya me dijo que esta listo
+
+**Respuesta:** Con la sesión ya iniciada, encontró el proyecto "progra web" en la cuenta de Supabase y conectó la carpeta del proyecto con `supabase link`. Comprobó que el vínculo quedara activo y que los archivos internos de Supabase (`.temp`) no se suban a GitHub. Aclaró que el proyecto está en EE.UU. (Oregon) y propuso como próximo paso crear las tablas de la base de datos.
+
+**Prompt 39**
+> dale si, y despues contame de que tratan
+
+**Respuesta:** Creó la migración `supabase/migrations/20261001170000_esquema_inicial.sql` y la aplicó en la base de Supabase con `supabase db push`. Incluye:
+- **8 tablas:** configuración del estudio, perfiles, profesoras, plantillas de horario, clases, reservas, mensualidades y pagos.
+- **Reglas de seguridad (RLS):** cada alumna ve solo sus datos.
+- **Funciones:** reservar (valida mes pagado, cupo y tope de 3 clases por semana), cancelar (12 h de anticipación), tomar asistencia y generar las clases de una semana.
+
+Generó los tipos de TypeScript en `src/types/database.types.ts`. Probó todo en la base real dentro de una transacción que se deshace al final, sin dejar datos: se bloquea la cuarta reserva de la semana y la reserva duplicada, la alumna no puede tomar asistencia ni hacerse admin, y un visitante sin login no ve reservas. Después explicó para qué sirve cada tabla.
+
+**Prompt 40**
+> primero quiero saber porque no tiene una columna la tabla students o profiles con usuario y contrasenn1a. la idea es que yo creo un usuario y contrasena y se las paso automaticamente por mail. ademas no entiendo como voy registrando la cntidad de alumnos anotados en una clase.
+>
+> ademas quiero saber que es conectar el sitio react con supabase y armar el login
+
+**Respuesta:** Explicó tres cosas, sin cambiar código:
+- **Usuario y contraseña:** viven en la tabla de Supabase Auth (`auth.users`), con la contraseña encriptada, y `profiles` se une a ella por el mismo `id`. Recomendó usar la invitación por email de Supabase en lugar de mandar contraseñas por mail.
+- **Cantidad de anotadas:** no se guarda en una columna; se cuenta a partir de las filas de `bookings` de cada clase. Detectó que las alumnas no pueden ver las reservas de otras y por eso no pueden saber cuántos lugares quedan, y propuso agregar una vista con los lugares libres.
+- **Conectar React con Supabase:** instalar la librería de Supabase, configurar la URL y la clave pública del proyecto, armar la pantalla de login y proteger las páginas del área de alumnas.
+
+**Prompt 41**
+> dale si, y hacemos como digiste de enviarle un mail con un boton que sea cambiar tu contrasenn1a
+
+**Respuesta:** Hizo cuatro cosas:
+- **Base de datos:** agregó la función `session_availability`, que devuelve los lugares libres de cada clase sin mostrar quién reservó, y la aplicó en Supabase.
+- **Conexión del sitio:** instaló `@supabase/supabase-js` y configuró la dirección del proyecto y la clave pública en `.env.local`, que no se sube a GitHub.
+- **Login:** armó las pantallas de ingresar, "olvidé mi contraseña" y crear o cambiar contraseña (`/crear-contrasena`), protegió el área de alumnas (`/app`) y cambió el botón del header a "Mi cuenta" cuando hay sesión.
+- **Mails:** diseñó los mails de invitación ("Crear mi contraseña") y de recuperación ("Cambiar mi contraseña"), con un botón que lleva a `/crear-contrasena`.
+
+El proyecto compila sin errores. El sistema de permisos bloqueó el envío automático de la configuración del login a Supabase (mails, registro cerrado, direcciones permitidas), así que explicó cómo cargarla a mano desde el panel. También avisó que hay que cargar las variables de entorno en Vercel antes de subir los cambios.
+
+**Prompt 42**
+> que variables y como las creo en vercel
+
+**Respuesta:** Explicó qué son las dos variables (`VITE_SUPABASE_URL`, la dirección del proyecto, y `VITE_SUPABASE_PUBLISHABLE_KEY`, la clave pública) y dónde están sus valores (`.env.local`). Dio el paso a paso para crearlas en Vercel desde Settings → Environment Variables.
+
+**Prompt 43**
+> creo que hay que tener el pro para crear variables
+
+**Respuesta:** Aclaró que las variables de entorno de un proyecto son gratis en el plan Hobby. Lo que pide Pro suelen ser las variables compartidas entre proyectos del equipo, que aparecen en la configuración del equipo y no en la del proyecto. Explicó cómo llegar a la pantalla correcta y propuso un plan B si no aparece: subir las dos variables en un archivo `.env.production`, algo posible porque las dos son públicas.
+
+---
+
+## 9. Retomar el proyecto — 08/10/2026
+
+**Prompt 44**
+> quiero retomar este proyecto. necesito saber si ya quedo terminada la integracion en supabase y la interfaz para el usuario admin
+
+**Respuesta:** Revisó el estado del proyecto sin cambiar código. Comprobó que las dos migraciones están aplicadas en Supabase y que el proyecto compila. Concluyó que ninguna de las dos cosas está terminada:
+- **Supabase:** la base de datos y el login están listos, pero falta usar la base desde las pantallas de reservas, mis clases y pagos. Además, nada de la conexión con Supabase está guardado en git ni subido a GitHub o Vercel.
+- **Panel admin:** no existe todavía; los permisos de admin están en la base, pero no hay pantallas.
+
+Propuso el orden para seguir.
+
+**Prompt 45**
+> 1. ayudame a cargar lo vercel
+
+**Respuesta:** Leyó las dos variables de `.env.local` y abrió en Chrome la pantalla de variables de entorno del proyecto `programacion-web` en Vercel. Confirmó que todavía no había ninguna cargada. No escribió la clave en el formulario, porque no ingresa claves de API en sitios web aunque sean públicas. Dio el paso a paso para pegar las dos variables y volver a publicar.
+
+**Prompt 46**
+> Remove the public framework prefix to keep this value private. Public prefixes expose values to the browser. If that's safe, change the variable to Config.
+
+**Respuesta:** Explicó que es un aviso de Vercel y que no hay que sacar el prefijo `VITE_`: sin él, Vite no incluye la variable en el sitio y el login deja de funcionar. Las dos variables son públicas a propósito (la dirección del proyecto y la clave *publishable*); los datos los protegen las reglas RLS de Supabase. Indicó cambiar el tipo de las dos variables a **Config**, como sugiere el mismo aviso. Aclaró que la clave secreta de Supabase nunca tiene que llevar ese prefijo.
+
+**Prompt 47**
+> listo
+
+**Respuesta:** Comprobó en Vercel que las dos variables quedaron guardadas como Config en todos los entornos. Revisó que no se subieran archivos privados (`.env.local`, `supabase/.temp`) ni contraseñas en `supabase/config.toml`. Hizo el commit con la conexión a Supabase (migraciones, login, recuperar y crear contraseña, plantillas de mails) y lo subió a GitHub con `git push`, lo que dispara el deploy en Vercel.

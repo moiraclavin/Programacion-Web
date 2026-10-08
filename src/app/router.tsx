@@ -1,7 +1,11 @@
 import { createBrowserRouter, type RouteObject } from 'react-router';
 import { PublicLayout } from '../components/layout/PublicLayout';
 import { UiShowcase } from '../dev/UiShowcase';
+import { RequireAuth } from '../features/auth/RequireAuth';
+import { ForgotPasswordPage } from '../pages/auth/ForgotPasswordPage';
 import { LoginPage } from '../pages/auth/LoginPage';
+import { SetPasswordPage } from '../pages/auth/SetPasswordPage';
+import { StudentHomePage } from '../pages/student/StudentHomePage';
 import { AboutPage } from '../pages/public/AboutPage';
 import { ContactPage } from '../pages/public/ContactPage';
 import { HomePage } from '../pages/public/HomePage';
@@ -22,6 +26,13 @@ export const router = createBrowserRouter([
       { path: 'estudio', element: <StudioPage /> },
       { path: 'contacto', element: <ContactPage /> },
       { path: 'ingresar', element: <LoginPage /> },
+      { path: 'recuperar', element: <ForgotPasswordPage /> },
+      { path: 'crear-contrasena', element: <SetPasswordPage /> },
+      {
+        // Área de alumnas: solo con sesión iniciada.
+        element: <RequireAuth />,
+        children: [{ path: 'app', element: <StudentHomePage /> }],
+      },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

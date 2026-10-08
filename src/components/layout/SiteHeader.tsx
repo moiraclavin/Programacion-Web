@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink } from 'react-router';
 import { studio, publicNav } from '../../content/studio';
+import { useAuth } from '../../features/auth/AuthProvider';
 import { ButtonLink } from '../ui';
 import { Container } from './Container';
 import styles from './SiteHeader.module.css';
@@ -10,6 +11,8 @@ const DESKTOP_QUERY = '(min-width: 960px)';
 
 export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { session } = useAuth();
+  const account = session ? { to: '/app', label: 'Mi cuenta' } : { to: '/ingresar', label: 'Ingresar' };
   const toggleRef = useRef<HTMLButtonElement>(null);
   const closeMenu = () => setMenuOpen(false);
 
@@ -61,8 +64,8 @@ export function SiteHeader() {
         </nav>
 
         <div className={styles.actions}>
-          <ButtonLink to="/ingresar" variant="secondary" size="sm" className={styles.loginDesktop}>
-            Ingresar
+          <ButtonLink to={account.to} variant="secondary" size="sm" className={styles.loginDesktop}>
+            {account.label}
           </ButtonLink>
           <button
             ref={toggleRef}
@@ -97,8 +100,8 @@ export function SiteHeader() {
           </ul>
         </nav>
         <div className={styles.mobileFooter}>
-          <ButtonLink to="/ingresar" size="lg" fullWidth onClick={closeMenu}>
-            Ingresar
+          <ButtonLink to={account.to} size="lg" fullWidth onClick={closeMenu}>
+            {account.label}
           </ButtonLink>
           <p className={styles.mobileContact}>{studio.contact.address}</p>
         </div>
