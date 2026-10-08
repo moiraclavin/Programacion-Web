@@ -6,5 +6,6 @@ export { EmptyState, type EmptyStateProps } from './EmptyState';
 export { Input, type InputProps } from './Input';
 export { Modal, type ModalProps } from './Modal';
 export { Photo, type PhotoProps } from './Photo';
+export { Select, type SelectProps } from './Select';
 export { Spinner, type SpinnerProps } from './Spinner';
 export { Tabs, type TabItem, type TabsProps } from './Tabs';

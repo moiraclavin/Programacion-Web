@@ -1,0 +1,62 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.select {
+  width: 100%;
+  min-height: 3rem;
+  padding-inline: var(--space-4) var(--space-10);
+  background-color: var(--color-surface);
+  /* Flecha propia: se saca la del sistema para que se vea igual en todos los navegadores. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%232b2926' stroke-width='1.5'%3E%3Cpath d='M1 1.5l5 5 5-5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: right var(--space-4) center;
+  background-repeat: no-repeat;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
+  appearance: none;
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+@media (hover: hover) {
+  .select:hover:not(:disabled) {
+    border-color: var(--color-ink);
+  }
+}
+
+.select:focus-visible {
+  border-color: var(--color-ink);
+  outline: 1px solid var(--color-ink);
+  outline-offset: 0;
+}
+
+.select:disabled {
+  background-color: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.invalid,
+.invalid:focus-visible {
+  border-color: var(--color-danger);
+  outline-color: var(--color-danger);
+}
+
+.hint {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.error {
+  font-size: var(--text-sm);
+  color: var(--color-danger);
+}

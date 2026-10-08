@@ -11,8 +11,12 @@ const DESKTOP_QUERY = '(min-width: 960px)';
 
 export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { session } = useAuth();
-  const account = session ? { to: '/app', label: 'Mi cuenta' } : { to: '/ingresar', label: 'Ingresar' };
+  const { session, isStaff } = useAuth();
+  const account = !session
+    ? { to: '/ingresar', label: 'Ingresar' }
+    : isStaff
+      ? { to: '/admin', label: 'Panel' }
+      : { to: '/app', label: 'Mi cuenta' };
   const toggleRef = useRef<HTMLButtonElement>(null);
   const closeMenu = () => setMenuOpen(false);
 

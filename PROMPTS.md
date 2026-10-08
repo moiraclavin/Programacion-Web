@@ -384,3 +384,29 @@ Propuso el orden para seguir.
 > listo
 
 **Respuesta:** Comprobó en Vercel que las dos variables quedaron guardadas como Config en todos los entornos. Revisó que no se subieran archivos privados (`.env.local`, `supabase/.temp`) ni contraseñas en `supabase/config.toml`. Hizo el commit con la conexión a Supabase (migraciones, login, recuperar y crear contraseña, plantillas de mails) y lo subió a GitHub con `git push`, lo que dispara el deploy en Vercel.
+
+**Prompt 48**
+> Failed to invite user: Failed to make POST request to "https://stvcqveqfduwifzncqgo.supabase.co/auth/v1/invite". Check your project's Auth logs for more information. Error message: Error sending invite email
+
+**Respuesta:** Revisó la plantilla de invitación y confirmó que está bien: no es la causa. El error viene del servicio de mails gratuito de Supabase, que solo envía a miembros de la organización y tiene un tope de 2 mails por hora. Propuso saltear el mail para crear el usuario admin (crearlo desde el panel con contraseña y "Auto Confirm User") y dejar para más adelante un servicio de mails propio para invitar alumnas.
+
+**Prompt 49**
+> listo, sigamos con lo que falta y tema usuarios lo vemos despues
+
+**Respuesta:** Armó el panel de administración (`/admin`), que solo pueden ver las cuentas con rol admin o profesora:
+- **Agenda:** las clases de cada semana con cuántas alumnas se anotaron, navegación entre semanas y un botón para generar las clases de la semana a partir de los horarios.
+- **Clase:** lista de alumnas anotadas con botones Presente y Ausente para tomar asistencia.
+- **Horarios:** alta y pausa de los horarios fijos de la semana, y alta de profesoras (hacían falta para poder generar clases).
+- **Alumnas:** listado con buscador y estado del mes, y una ficha por alumna con mensualidades, pagos y clases con su asistencia.
+
+Para eso el sitio ahora lee el rol de quien inició sesión (el botón del header dice "Panel" para admin y profesoras). Probó en la base real, en una transacción que se deshace sola, que el admin puede crear un horario y generar las clases de una semana sin duplicarlas, y que la agenda muestra los lugares libres. Comprobó que entrar a `/admin` sin sesión redirige al login. El proyecto compila sin errores. Quedaron fuera por ahora: cancelar una clase (feriados), registrar pagos manuales y dar de alta alumnas.
+
+**Prompt 50**
+> pero el panel admin donde esta?
+
+**Respuesta:** Explicó que el panel todavía no se ve en el sitio publicado porque los cambios están solo en la computadora y no se subieron a GitHub. Indicó cómo verlo ahora corriendo el sitio en local (`npm run dev`, entrar a `/ingresar` y tocar "Panel"), y ofreció subirlo para que aparezca en Vercel.
+
+**Prompt 51**
+> dale si
+
+**Respuesta:** Hizo el commit del panel de administración y lo subió a GitHub con `git push`, lo que dispara el deploy en Vercel. Comprobó que el sitio publicado ya incluya el panel.
