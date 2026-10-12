@@ -50,6 +50,16 @@ describe('allowedOrigin', () => {
     assert.equal(allowedOrigin('https://malicioso.example', allowed), null);
     assert.equal(allowedOrigin(null, allowed), null);
   });
+
+  it('acepta los previews del proyecto pero no los de otro', () => {
+    const rules = [/^https:\/\/programacion-web-[a-z0-9-]+-patsy\.vercel\.app$/];
+    assert.equal(
+      allowedOrigin('https://programacion-web-git-rama-patsy.vercel.app', rules),
+      'https://programacion-web-git-rama-patsy.vercel.app',
+    );
+    assert.equal(allowedOrigin('https://programacion-web-git-rama-otro.vercel.app', rules), null);
+    assert.equal(allowedOrigin('https://evil.com/programacion-web-x-patsy.vercel.app', rules), null);
+  });
 });
 
 describe('verifySignature', () => {

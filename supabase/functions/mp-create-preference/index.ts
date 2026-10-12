@@ -7,7 +7,12 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 import { allowedOrigin, periodOf } from '../_shared/mercadopago.ts';
 
 const SITE_URL = Deno.env.get('SITE_URL') ?? 'https://programacion-web-theta-orpin.vercel.app';
-const ALLOWED_ORIGINS = [SITE_URL, 'http://localhost:5173', 'http://localhost:5199'];
+const ALLOWED_ORIGINS: Array<string | RegExp> = [
+  SITE_URL,
+  'http://localhost:5173',
+  // Previews de Vercel de este proyecto (uno por cada pull request).
+  /^https:\/\/programacion-web-[a-z0-9-]+-patsy\.vercel\.app$/,
+];
 
 const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
   auth: { persistSession: false },

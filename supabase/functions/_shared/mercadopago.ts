@@ -36,9 +36,13 @@ export function periodOf(date: Date): string {
   return `${ymd.slice(0, 8)}01`;
 }
 
-/** Devuelve el origen si es uno de los permitidos (para CORS y para las URLs de regreso); si no, null. */
-export function allowedOrigin(origin: string | null, allowed: string[]): string | null {
-  return origin && allowed.includes(origin) ? origin : null;
+/**
+ * Devuelve el origen si está permitido (para CORS y para las URLs de regreso); si no, null.
+ * Cada permitido puede ser una dirección exacta o una expresión regular (los previews de Vercel).
+ */
+export function allowedOrigin(origin: string | null, allowed: Array<string | RegExp>): string | null {
+  if (!origin) return null;
+  return allowed.some((rule) => (typeof rule === 'string' ? rule === origin : rule.test(origin))) ? origin : null;
 }
 
 /**

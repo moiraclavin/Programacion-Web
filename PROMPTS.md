@@ -454,3 +454,4 @@ Dejó afuera, como pidió, los pagos en efectivo y los mails de invitación. El 
 - **Pruebas:** 8 pruebas automáticas de la lógica de pagos (estados, montos, mes de cobro, firma). Probó las funciones publicadas desde afuera: sin sesión rechaza, un aviso falso se ignora, y el token de Mercado Pago funciona.
 - **E1:** acción de CI en GitHub (tipos, pruebas y build), plantilla de pull request con checklist y README del proyecto.
 - Incluye en la misma rama el área de alumnas ya armada. Abrió el pull request para ver el preview.
+Al revisar el preview detectó que la función de pago bloqueaba los pedidos hechos desde los previews de Vercel, y lo corrigió para aceptar los previews de este proyecto (con una prueba más, 9 en total).
