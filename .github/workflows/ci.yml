@@ -1,0 +1,31 @@
+name: CI
+
+# Se ejecuta en cada pull request y en cada push a main.
+# Vercel publica por separado: un preview por cada PR y producción al integrar en main.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verificar:
+    name: Tipos, pruebas y build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Revisión de tipos
+        run: npm run typecheck
+
+      - name: Pruebas
+        run: npm test
+
+      - name: Build de producción
+        run: npm run build
