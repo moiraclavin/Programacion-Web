@@ -1,5 +1,6 @@
-import { createBrowserRouter, type RouteObject } from 'react-router';
+import { createBrowserRouter, Navigate, type RouteObject } from 'react-router';
 import { AdminLayout } from '../components/layout/AdminLayout';
+import { StudentLayout } from '../components/layout/StudentLayout';
 import { PublicLayout } from '../components/layout/PublicLayout';
 import { UiShowcase } from '../dev/UiShowcase';
 import { RequireAuth } from '../features/auth/RequireAuth';
@@ -12,7 +13,10 @@ import { AdminSchedulePage } from '../pages/admin/AdminSchedulePage';
 import { AdminSessionPage } from '../pages/admin/AdminSessionPage';
 import { AdminStudentPage } from '../pages/admin/AdminStudentPage';
 import { AdminStudentsPage } from '../pages/admin/AdminStudentsPage';
-import { StudentHomePage } from '../pages/student/StudentHomePage';
+import { AccountPage } from '../pages/student/AccountPage';
+import { MyClassesPage } from '../pages/student/MyClassesPage';
+import { PaymentsPage } from '../pages/student/PaymentsPage';
+import { ReservePage } from '../pages/student/ReservePage';
 import { AboutPage } from '../pages/public/AboutPage';
 import { ContactPage } from '../pages/public/ContactPage';
 import { HomePage } from '../pages/public/HomePage';
@@ -38,7 +42,19 @@ export const router = createBrowserRouter([
       {
         // Área de alumnas: solo con sesión iniciada.
         element: <RequireAuth />,
-        children: [{ path: 'app', element: <StudentHomePage /> }],
+        children: [
+          {
+            path: 'app',
+            element: <StudentLayout />,
+            children: [
+              { index: true, element: <Navigate to="reservar" replace /> },
+              { path: 'reservar', element: <ReservePage /> },
+              { path: 'mis-clases', element: <MyClassesPage /> },
+              { path: 'pagos', element: <PaymentsPage /> },
+              { path: 'cuenta', element: <AccountPage /> },
+            ],
+          },
+        ],
       },
       {
         // Panel: solo admin y profesoras.

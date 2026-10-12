@@ -3,6 +3,8 @@ import type { Database } from '../types/database.types';
 
 type Enums = Database['public']['Enums'];
 
+export type BookingStatus = Enums['booking_status'];
+
 export const bookingStatusLabel: Record<Enums['booking_status'], string> = {
   booked: 'Reservada',
   attended: 'Presente',

@@ -419,3 +419,12 @@ enabled = true
 # formatted with uppercase keywords, indent 2, max width 180, trailing commas,
 # and column/key alignment. Set to "null" to emit raw, unformatted SQL.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":180,\"commaStyle\":\"trailing\"}"
+
+# Funciones del servidor para los pagos. verify_jwt = false porque:
+# - mp-create-preference valida el token de la alumna ella misma (auth.getUser).
+# - mp-webhook lo llama Mercado Pago, que no tiene sesión.
+[functions.mp-create-preference]
+verify_jwt = false
+
+[functions.mp-webhook]
+verify_jwt = false
