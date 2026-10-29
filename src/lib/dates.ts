@@ -56,6 +56,23 @@ export function startOfDay(ymd: Ymd): Date {
   return new Date(`${ymd}T00:00:00${OFFSET}`);
 }
 
+/** Instante en que empieza una clase a esa hora (0–23) del día dado, en Buenos Aires. */
+export function slotStart(ymd: Ymd, hour: number): Date {
+  return new Date(`${ymd}T${String(hour).padStart(2, '0')}:00:00${OFFSET}`);
+}
+
+/** Suma (o resta) meses a un período "YYYY-MM-01". */
+export function addMonths(period: Ymd, months: number): Ymd {
+  const [year, month] = period.split('-').map(Number);
+  const index = year * 12 + (month - 1) + months;
+  return `${Math.floor(index / 12)}-${String((index % 12) + 1).padStart(2, '0')}-01`;
+}
+
+/** Los 12 períodos ("YYYY-MM-01") de un año. */
+export function periodsOfYear(year: number): Ymd[] {
+  return Array.from({ length: 12 }, (_, i) => `${year}-${String(i + 1).padStart(2, '0')}-01`);
+}
+
 /** Día de la semana de una fecha calendario: 1 = lunes … 7 = domingo. */
 export function isoWeekday(ymd: Ymd): number {
   return parseYmd(ymd).getUTCDay() || 7;
@@ -85,6 +102,7 @@ const dateTimeFormat = new Intl.DateTimeFormat('es-AR', {
   minute: '2-digit',
   hour12: false,
 });
+const monthNameFormat = new Intl.DateTimeFormat('es-AR', { timeZone: 'UTC', month: 'long' });
 const monthFormat = new Intl.DateTimeFormat('es-AR', { timeZone: 'UTC', month: 'long', year: 'numeric' });
 
 function capitalize(text: string): string {
@@ -119,6 +137,11 @@ export function formatTime(iso: string): string {
 /** "lun, 5 oct, 08:00" desde un timestamp de la base. */
 export function formatDateTime(iso: string): string {
   return capitalize(dateTimeFormat.format(new Date(iso)).replace(/\./g, ''));
+}
+
+/** "Octubre" desde una fecha "YYYY-MM-DD". */
+export function formatMonthName(ymd: Ymd): string {
+  return capitalize(monthNameFormat.format(parseYmd(ymd)));
 }
 
 /** "Octubre de 2026" desde una fecha "YYYY-MM-DD". */

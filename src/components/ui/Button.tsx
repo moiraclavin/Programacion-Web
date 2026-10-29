@@ -5,7 +5,7 @@ import styles from './Button.module.css';
 
 export interface ButtonStyleOptions {
   /** `inverse` es para usar sobre fotos o fondos oscuros. */
-  variant?: 'primary' | 'secondary' | 'ghost' | 'inverse';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'inverse' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
 }
