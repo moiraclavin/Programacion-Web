@@ -37,6 +37,25 @@ export function periodOf(date: Date): string {
 }
 
 /**
+ * Qué mes se está pagando. Sin dato, el mes actual. Se acepta "YYYY-MM" o "YYYY-MM-01",
+ * desde el mes actual hasta 12 meses adelante. Devuelve null si el dato no es válido o está fuera de ese rango.
+ */
+export function resolvePeriod(input: unknown, now: Date): string | null {
+  const current = periodOf(now);
+  if (input === undefined || input === null || input === '') return current;
+  if (typeof input !== 'string') return null;
+
+  const match = /^(\d{4})-(\d{2})(?:-01)?$/.exec(input);
+  if (!match) return null;
+  const month = Number(match[2]);
+  if (month < 1 || month > 12) return null;
+
+  const [currentYear, currentMonth] = current.split('-').map(Number);
+  const monthsAhead = (Number(match[1]) - currentYear) * 12 + (month - currentMonth);
+  return monthsAhead >= 0 && monthsAhead <= 12 ? `${match[1]}-${match[2]}-01` : null;
+}
+
+/**
  * Devuelve el origen si está permitido (para CORS y para las URLs de regreso); si no, null.
  * Cada permitido puede ser una dirección exacta o una expresión regular (los previews de Vercel).
  */

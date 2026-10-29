@@ -14,7 +14,7 @@ Proyecto de la materia Programación Web (ITBA).
 |---|---|---|
 | Institucional | `/`, `/nosotros`, `/profesoras`, `/estudio`, `/contacto` | Todos |
 | Alumnas | `/app/reservar`, `/app/mis-clases`, `/app/pagos`, `/app/cuenta` | Alumnas con sesión |
-| Panel | `/admin` (agenda, clase, horarios, alumnas) | Admin y profesoras |
+| Panel | `/admin` (agenda en calendario, clase, horarios, alumnas con métricas) | Admin y profesoras (las altas y cancelaciones, solo admin) |
 
 Reglas del estudio: clases de 1 hora con cupo limitado, máximo 3 clases por semana por alumna,
 cancelación sin costo hasta 12 horas antes (después, la clase se descuenta), y reservas solo con el mes pagado.
@@ -67,17 +67,25 @@ src/
   lib/                 Cliente de Supabase, fechas, etiquetas, hook de consultas
 supabase/
   migrations/          Esquema de la base, permisos y funciones
-  functions/           Edge Functions: mp-create-preference y mp-webhook
+  functions/           Edge Functions: mp-create-preference, mp-webhook y admin-students
 ```
 
 ## Pagos con Mercado Pago
 
-1. La alumna toca **Pagar** → el sitio llama (con `fetch`) a la función `mp-create-preference`.
+1. La alumna toca un mes en el calendario del año (el actual o uno futuro, hasta 12 meses adelante) y **Pagar** →
+   el sitio llama (con `fetch`) a la función `mp-create-preference` indicando el mes.
 2. La función valida la sesión, decide el monto y el mes, crea el pago en estado pendiente
    y devuelve el link de Mercado Pago.
 3. La alumna paga en Mercado Pago y vuelve a `/app/pagos`.
 4. Mercado Pago avisa a `mp-webhook`, que consulta el pago directamente a Mercado Pago, verifica el monto
    y recién ahí marca el pago como aprobado y activa la mensualidad. Es idempotente.
+
+## Alta de alumnas
+
+Las alumnas no se registran solas: las da de alta el estudio desde **Panel → Alumnas → Agregar alumna**.
+El panel llama a la función `admin-students` (solo admin), que crea el usuario en Supabase Auth y devuelve un
+link para que la alumna elija su contraseña. El estudio se lo pasa por WhatsApp; su usuario es su email.
+Si olvida la contraseña, se genera un link nuevo desde su ficha. No depende del envío de mails.
 
 ## Cómo trabajamos
 
