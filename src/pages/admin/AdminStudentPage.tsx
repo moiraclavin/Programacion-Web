@@ -1,5 +1,9 @@
+import { useState } from 'react';
 import { Link, useParams } from 'react-router';
-import { Badge, EmptyState, Spinner } from '../../components/ui';
+import { Badge, Button, EmptyState, Spinner } from '../../components/ui';
+import { useAuth } from '../../features/auth/AuthProvider';
+import { AccessLinkModal, type AccessInfo } from '../../features/students/AccessLinkModal';
+import { newAccessLink } from '../../features/students/adminStudents';
 import { cx } from '../../lib/cx';
 import { formatDateTime, formatMonth, toYmd, ymdOfTimestamp } from '../../lib/dates';
 import {
@@ -18,9 +22,14 @@ import styles from './admin.module.css';
 
 export function AdminStudentPage() {
   const { id = '' } = useParams();
+  const { session, profile: me } = useAuth();
+  const isAdmin = me?.role === 'admin';
+  const [access, setAccess] = useState<AccessInfo | null>(null);
+  const [linkBusy, setLinkBusy] = useState(false);
+  const [linkError, setLinkError] = useState<string | null>(null);
 
   const profile = useQuery(
-    () => unwrap(supabase.from('profiles').select('id, first_name, last_name, phone').eq('id', id).single()),
+    () => unwrap(supabase.from('profiles').select('id, first_name, last_name, phone, email').eq('id', id).single()),
     [id],
   );
   const memberships = useQuery(
@@ -45,6 +54,26 @@ export function AdminStudentPage() {
     () => unwrap(supabase.from('bookings').select('id, status, class_sessions(starts_at)').eq('student_id', id)),
     [id],
   );
+
+  async function generateLink() {
+    if (!session || !profile.data) return;
+    setLinkBusy(true);
+    setLinkError(null);
+    try {
+      const result = await newAccessLink(session.access_token, id);
+      setAccess({
+        name: fullName(profile.data),
+        email: result.email,
+        phone: profile.data.phone,
+        link: result.link,
+        isNew: false,
+      });
+    } catch (caught) {
+      setLinkError(caught instanceof Error ? caught.message : 'No pudimos generar el link.');
+    } finally {
+      setLinkBusy(false);
+    }
+  }
 
   if (profile.loading && !profile.data) return <Spinner />;
   if (profile.error || !profile.data) {
@@ -74,7 +103,29 @@ export function AdminStudentPage() {
         ← Volver a alumnas
       </Link>
       <h1 className={styles.title}>{fullName(profile.data)}</h1>
-      {profile.data.phone && <p className={styles.subtitle}>{profile.data.phone}</p>}
+      <p className={styles.subtitle}>
+        {[profile.data.email, profile.data.phone].filter(Boolean).join(' · ') || 'Sin datos de contacto'}
+      </p>
+
+      {isAdmin && (
+        <section className={styles.section} aria-label="Acceso">
+          <h2 className={styles.sectionTitle}>Acceso</h2>
+          <p className={styles.rowMeta}>
+            Su usuario para ingresar es su email. Si olvidó la contraseña o el link que le pasaron venció, generá uno nuevo y
+            mandáselo.
+          </p>
+          <div className={styles.actions} style={{ marginTop: 'var(--space-4)' }}>
+            <Button variant="secondary" size="sm" loading={linkBusy} onClick={generateLink}>
+              Generar link de acceso
+            </Button>
+          </div>
+          {linkError && (
+            <p className={cx(styles.alert, styles.alertError)} role="alert" style={{ marginTop: 'var(--space-4)' }}>
+              {linkError}
+            </p>
+          )}
+        </section>
+      )}
 
       {[memberships, payments, bookings].some((q) => q.error) && (
         <p className={cx(styles.alert, styles.alertError)} role="alert" style={{ marginTop: 'var(--space-6)' }}>
@@ -149,6 +200,7 @@ export function AdminStudentPage() {
           </ul>
         )}
       </section>
+      <AccessLinkModal access={access} onClose={() => setAccess(null)} />
     </>
   );
 }
