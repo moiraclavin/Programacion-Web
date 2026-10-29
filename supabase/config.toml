@@ -428,3 +428,7 @@ verify_jwt = false
 
 [functions.mp-webhook]
 verify_jwt = false
+
+# Alta de alumnas: valida el token y que quien llama sea admin ella misma.
+[functions.admin-students]
+verify_jwt = false

@@ -26,6 +26,7 @@
   --color-wheat-deep: #6b5424;
   --color-clay-light: #f3e3dc;
   --color-clay: #9a4a36;
+  --color-clay-deep: #7f3a29;
 
   /* ── Roles semánticos (usar estos en los componentes) ────── */
   --color-bg: var(--color-bone);

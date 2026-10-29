@@ -8,7 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "node --test supabase/functions/_shared/mercadopago.test.ts"
+    "test": "node --test supabase/functions/_shared/mercadopago.test.ts src/lib/dates.test.ts src/lib/phone.test.ts src/lib/months.test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",

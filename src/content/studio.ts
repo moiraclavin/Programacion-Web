@@ -7,6 +7,8 @@ export const studio = {
   maxClassSize: 8,
   maxClassesPerWeek: 3,
   cancelWindowHours: 12,
+  /** Grilla del calendario del panel: clases de 1 hora, desde firstHour hasta endHour, de lunes a `days`. */
+  calendar: { firstHour: 7, endHour: 21, days: 6 },
   contact: {
     address: 'Gorriti 4800, Palermo, CABA',
     mapQuery: 'Gorriti 4800, Palermo, Buenos Aires',

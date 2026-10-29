@@ -3,7 +3,7 @@ import { Badge, Button, EmptyState, Input, Select, Spinner } from '../../compone
 import { studio } from '../../content/studio';
 import { useAuth } from '../../features/auth/AuthProvider';
 import { cx } from '../../lib/cx';
-import { weekdayLabel } from '../../lib/dates';
+import { addDays, mondayOf, toYmd, weekdayLabel } from '../../lib/dates';
 import { supabase } from '../../lib/supabase';
 import { unwrap, useQuery } from '../../lib/useQuery';
 import styles from './admin.module.css';
@@ -31,6 +31,8 @@ export function AdminSchedulePage() {
   );
 
   const [error, setError] = useState<string | null>(null);
+  const [generating, setGenerating] = useState<'this' | 'next' | null>(null);
+  const [generated, setGenerated] = useState<string | null>(null);
 
   // Formulario de horario
   const [weekday, setWeekday] = useState('1');
@@ -43,6 +45,21 @@ export function AdminSchedulePage() {
   const [name, setName] = useState('');
   const [specialty, setSpecialty] = useState('');
   const [savingInstructor, setSavingInstructor] = useState(false);
+
+  async function generate(which: 'this' | 'next') {
+    const monday = addDays(mondayOf(toYmd()), which === 'next' ? 7 : 0);
+    setGenerating(which);
+    setGenerated(null);
+    setError(null);
+    const { data, error: rpcError } = await supabase.rpc('generate_sessions', { p_week_start: monday });
+    setGenerating(null);
+    if (rpcError) return setError(rpcError.message);
+    setGenerated(
+      data === 0
+        ? 'No se crearon clases nuevas: ya estaban creadas, o no hay horarios activos.'
+        : `Se crearon ${data} clases.`,
+    );
+  }
 
   async function addTemplate(event: FormEvent) {
     event.preventDefault();
@@ -93,6 +110,29 @@ export function AdminSchedulePage() {
         <p className={cx(styles.alert, styles.alertError)} role="alert" style={{ marginTop: 'var(--space-6)' }}>
           {error}
         </p>
+      )}
+
+      {isAdmin && (
+        <section className={styles.section} aria-label="Generar clases">
+          <h2 className={styles.sectionTitle}>Generar clases desde estos horarios</h2>
+          <p className={styles.rowMeta}>
+            Crea las clases de una semana a partir de los horarios activos; las que ya existen no se duplican.
+            Las clases sueltas se agregan desde la Agenda.
+          </p>
+          <div className={styles.actions} style={{ marginTop: 'var(--space-4)' }}>
+            <Button variant="secondary" size="sm" loading={generating === 'this'} disabled={generating !== null} onClick={() => generate('this')}>
+              Esta semana
+            </Button>
+            <Button variant="secondary" size="sm" loading={generating === 'next'} disabled={generating !== null} onClick={() => generate('next')}>
+              La próxima semana
+            </Button>
+          </div>
+          {generated && (
+            <p className={cx(styles.alert, styles.alertOk)} role="status" style={{ marginTop: 'var(--space-4)' }}>
+              {generated}
+            </p>
+          )}
+        </section>
       )}
 
       <section className={styles.section} aria-label="Horarios semanales">

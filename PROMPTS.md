@@ -455,3 +455,38 @@ Dejó afuera, como pidió, los pagos en efectivo y los mails de invitación. El 
 - **E1:** acción de CI en GitHub (tipos, pruebas y build), plantilla de pull request con checklist y README del proyecto.
 - Incluye en la misma rama el área de alumnas ya armada. Abrió el pull request para ver el preview.
 Al revisar el preview detectó que la función de pago bloqueaba los pedidos hechos desde los previews de Vercel, y lo corrigió para aceptar los previews de este proyecto (con una prueba más, 9 en total).
+
+**Prompt 57**
+> me olvide la contraseña, creemos un usuario nuevo
+
+**Respuesta:** Explicó cómo crear un usuario admin nuevo desde el panel de Supabase (Authentication → Users → Add user, con contraseña y "Auto Confirm User") y cómo darle el rol de admin con una línea de SQL. Indicó borrar primero el usuario viejo si se quiere reutilizar el mismo email. No creó la cuenta por ella: la contraseña la elige y la guarda la usuaria.
+
+**Prompt 58**
+> listo, ahora el problema es que pasa al pago pero entra con mi cuenta normal, como hago para entrar con la centa tesr
+
+**Respuesta:** Explicó que el pago de prueba tiene que hacerse con una cuenta de prueba de Mercado Pago de tipo comprador (se crea en el panel de desarrolladores, en "Cuentas de prueba") y que, para que no tome la cuenta real, conviene abrir una ventana de incógnito. Dio la alternativa de pagar sin cuenta con una tarjeta de prueba, y propuso quitar el email del pedido de pago si el problema continuaba.
+
+## 11. Retomar el proyecto — 29/10/2026
+
+**Prompt 59** (enviado dos veces)
+> retomo este proyecto, me decis en donde habiamos quedado y como accedo al sitio de alumnas para ver como se ve desde el lado del cliente y poder pagar etc. ademas quiero saber porque no tengo alumnas registradas dentro del panel administrador no me aparecen
+
+**Respuesta:** Revisó el estado real sin cambiar código. El pull request #1 (área de alumnas y pagos) sigue abierto, así que el sitio publicado todavía no incluye esa parte. En la base hay 2 cuentas con rol admin y ninguna alumna: el panel solo lista cuentas con rol de alumna, por eso aparece vacío. El pago de prueba se inició (queda una mensualidad pendiente) pero nunca se completó en Mercado Pago. Explicó tres formas de ver el sitio de alumnas y propuso crear una alumna de prueba desde el panel de Supabase, usándola en una ventana de incógnito.
+
+**Prompt 60**
+> osea ya esta pusheado en vercel para ver esto de la seccion alumnas. o falta cargarlo ahi
+
+**Respuesta:** Aclaró que el código está subido a GitHub y Vercel ya generó un preview del pull request, pero el sitio publicado (producción) todavía no lo tiene hasta que se integre el PR con Merge.
+
+## 12. Calendario del panel, alta de alumnas y pagos por adelantado — 29/10/2026
+
+**Prompt 61**
+> listo, ya lo publique hay varias cosas que quiero modificar. primero el panel de creacion de clases, quiero que sea mas interactivo y visual en un modo de calendario donde sea mas sencillo agregar clases con un boton por ejemplo y cancelarlas con otro. las clases son de una hora siempre por ej de 8 a 9 y asi hasta las 10. entonces quiero que esta parte del panel sea mas interactiva para los empleados. la otra pregunta que tengo es la seccion alumnas, como doy de alta alumnas si no tengo un boton para dar de alta. de que manera entran a la plataforma y con que mail y contraseña, si los creo desde la pagina se crean los usuarios en supabase o como funciona?, quiero que esta seccion tenga metricas y demas de alumnas pagas sobre totales y asi ademas quiero que en pagos el alumno pueda pagar meses futuros y tambien sea un calendario del año que aparezca en colores si esta pago o no y se puedan tocar los meses y pagarlos por adelantado.
+
+**Respuesta:** Trabajó en una rama nueva con tres cambios:
+- **Calendario de la agenda:** grilla semanal con un día por columna y una fila por hora (7 a 21, de lunes a sábado). Un horario vacío tiene un botón "+" para agregar una clase (con profesora, lugares y opción de repetirla varias semanas); tocar una clase muestra el detalle y el botón para cancelarla, con confirmación. Cancelar una clase cancela también las reservas de las alumnas sin descontarles la clase. Hay un botón para copiar la semana a la siguiente. En la base: una sola clase por horario y la función `cancel_session`.
+- **Alta de alumnas:** botón "Agregar alumna" que crea el usuario en Supabase a través de una función del servidor (solo admin). No usa mails: devuelve un link para que la alumna elija su contraseña, con botones para copiarlo o enviarlo por WhatsApp. Su usuario es su email. Desde la ficha se puede generar un link nuevo si olvida la contraseña. Las métricas muestran alumnas totales, cuántas pagaron el mes (con barra y porcentaje), lo cobrado y la asistencia, con filtro por pagas y sin pagar.
+- **Pagos por adelantado:** calendario del año en colores (pagado, mes actual sin pagar, futuro para pagar, pasado sin pagar). Los meses que se pueden pagar son botones que abren una confirmación y llevan a Mercado Pago. El servidor valida el mes (el actual hasta 12 meses adelante).
+
+Agregó pruebas de la lógica pura (horarios, celular de WhatsApp, validación de email, estado de cada mes, mes a pagar): 25 en total. La publicación de las migraciones en la base de producción fue bloqueada por el sistema de permisos, por lo que quedó como paso a correr por la usuaria.
+

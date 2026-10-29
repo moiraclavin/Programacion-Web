@@ -6,6 +6,7 @@ import {
   amountsMatch,
   mapPaymentStatus,
   periodOf,
+  resolvePeriod,
   signatureManifest,
   verifySignature,
 } from './mercadopago.ts';
@@ -40,6 +41,28 @@ describe('periodOf', () => {
     assert.equal(periodOf(new Date('2026-11-01T01:00:00Z')), '2026-10-01');
     assert.equal(periodOf(new Date('2026-11-01T03:00:00Z')), '2026-11-01');
     assert.equal(periodOf(new Date('2026-10-15T12:00:00Z')), '2026-10-01');
+  });
+});
+
+describe('resolvePeriod', () => {
+  const now = new Date('2026-10-29T15:00:00Z');
+
+  it('sin dato usa el mes actual', () => {
+    assert.equal(resolvePeriod(undefined, now), '2026-10-01');
+    assert.equal(resolvePeriod('', now), '2026-10-01');
+  });
+
+  it('acepta el mes actual y hasta 12 meses adelante, con o sin día', () => {
+    assert.equal(resolvePeriod('2026-10', now), '2026-10-01');
+    assert.equal(resolvePeriod('2026-12-01', now), '2026-12-01');
+    assert.equal(resolvePeriod('2027-01', now), '2027-01-01');
+    assert.equal(resolvePeriod('2027-10', now), '2027-10-01');
+  });
+
+  it('rechaza meses pasados, muy lejanos o mal escritos', () => {
+    for (const value of ['2026-09', '2025-12-01', '2027-11', '2026-13', '2026-00', '2026-10-15', 'octubre', 20261001, {}]) {
+      assert.equal(resolvePeriod(value, now), null, String(value));
+    }
   });
 });
 

@@ -47,6 +47,11 @@
   color: var(--color-ink);
 }
 
+.danger {
+  background: var(--color-clay);
+  color: var(--color-white);
+}
+
 /* Hover solo en dispositivos con puntero: evita el "hover pegado" en celulares. */
 @media (hover: hover) {
   .primary:hover:not(:disabled) {
@@ -64,6 +69,10 @@
 
   .inverse:hover:not(:disabled) {
     background: var(--color-sand);
+  }
+
+  .danger:hover:not(:disabled) {
+    background: var(--color-clay-deep);
   }
 }
 

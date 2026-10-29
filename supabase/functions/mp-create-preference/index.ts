@@ -1,10 +1,10 @@
-// Crea el cobro de la mensualidad del mes y devuelve el link de pago de Mercado Pago (Checkout Pro).
+// Crea el cobro de la mensualidad de un mes (el actual o uno futuro) y devuelve el link de pago de Mercado Pago (Checkout Pro).
 //
 // La alumna llama a esta función con su sesión. El monto y el mes los decide el servidor:
 // nunca se toman de lo que manda el navegador.
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { allowedOrigin, periodOf } from '../_shared/mercadopago.ts';
+import { allowedOrigin, resolvePeriod } from '../_shared/mercadopago.ts';
 
 const SITE_URL = Deno.env.get('SITE_URL') ?? 'https://programacion-web-theta-orpin.vercel.app';
 const ALLOWED_ORIGINS: Array<string | RegExp> = [
@@ -59,7 +59,11 @@ Deno.serve(async (req) => {
   const fee = Number(settings.monthly_fee);
   if (!(fee > 0)) return json({ error: 'El estudio todavía no cargó el valor de la mensualidad.' }, 409, origin);
 
-  const period = periodOf(new Date());
+  // El mes lo elige la alumna (puede pagar por adelantado), pero el servidor lo valida:
+  // desde el mes actual hasta 12 meses adelante. Sin dato, se cobra el mes actual.
+  const body = await req.json().catch(() => null);
+  const period = resolvePeriod(body?.period, new Date());
+  if (!period) return json({ error: 'Ese mes no se puede pagar todavía.' }, 400, origin);
 
   const { data: existing, error: membershipError } = await admin
     .from('memberships')
@@ -99,7 +103,7 @@ Deno.serve(async (req) => {
   // 4. Se crea la preferencia en Mercado Pago. Nuestro id de pago viaja como external_reference
   //    y es lo que usa el webhook para saber de qué pago se trata.
   const base = origin ?? SITE_URL;
-  const back = (result: string) => `${base}/app/pagos?resultado=${result}`;
+  const back = (result: string) => `${base}/app/pagos?resultado=${result}&mes=${period.slice(0, 7)}`;
   const monthName = new Intl.DateTimeFormat('es-AR', { timeZone: 'UTC', month: 'long', year: 'numeric' }).format(
     new Date(`${period}T00:00:00Z`),
   );
