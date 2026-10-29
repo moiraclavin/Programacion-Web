@@ -37,7 +37,18 @@ export function mondayOf(ymd: Ymd): Ymd {
 
 /** Primer día del mes actual: así se identifica cada mensualidad. */
 export function currentPeriod(): Ymd {
-  return `${toYmd().slice(0, 8)}01`;
+  return firstOfMonth(toYmd());
+}
+
+/** Primer día del mes de una fecha: "2026-10-15" → "2026-10-01". */
+export function firstOfMonth(ymd: Ymd): Ymd {
+  return `${ymd.slice(0, 8)}01`;
+}
+
+/** Primer día del mes siguiente (o anterior con -1) al de la fecha dada. */
+export function shiftMonth(ymd: Ymd, months: 1 | -1): Ymd {
+  const first = firstOfMonth(ymd);
+  return firstOfMonth(months === 1 ? addDays(first, 32) : addDays(first, -1));
 }
 
 /** Instante en que empieza ese día en Buenos Aires. */
@@ -56,6 +67,7 @@ const dayLabel = new Intl.DateTimeFormat('es-AR', {
   day: 'numeric',
   month: 'long',
 });
+const tabDay = new Intl.DateTimeFormat('es-AR', { timeZone: 'UTC', weekday: 'short', day: 'numeric' });
 const shortDay = new Intl.DateTimeFormat('es-AR', { timeZone: 'UTC', day: 'numeric', month: 'short' });
 const weekdayName = new Intl.DateTimeFormat('es-AR', { timeZone: 'UTC', weekday: 'long' });
 const timeFormat = new Intl.DateTimeFormat('es-AR', {
@@ -82,6 +94,11 @@ function capitalize(text: string): string {
 /** "Lunes 5 de octubre" */
 export function formatDay(ymd: Ymd): string {
   return capitalize(dayLabel.format(parseYmd(ymd)));
+}
+
+/** "Lun 5" (para pestañas de días) */
+export function formatDayTab(ymd: Ymd): string {
+  return capitalize(tabDay.format(parseYmd(ymd)).replace('.', ''));
 }
 
 /** "5 oct" */

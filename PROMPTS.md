@@ -410,3 +410,48 @@ Para eso el sitio ahora lee el rol de quien inició sesión (el botón del heade
 > dale si
 
 **Respuesta:** Hizo el commit del panel de administración y lo subió a GitHub con `git push`, lo que dispara el deploy en Vercel. Comprobó que el sitio publicado ya incluya el panel.
+
+**Prompt 52**
+> listo, funciona bien. entonces ya esta conectado con supabase por completo no?
+
+**Respuesta:** Aclaró que no del todo. Está conectado el login y el panel de admin (agenda, horarios, asistencia, alumnas). Falta el área de alumnas (reservar, cancelar, mis clases, pagos), los pagos con Mercado Pago, el alta de alumnas con mails (servicio de mails propio) y algunos detalles del panel. Las profesoras del sitio público siguen cargadas en el código y no se leen de la base.
+
+## 10. Área de alumnas — 11/10/2026
+
+**Prompt 53**
+> 1. no me importan tanto los pagos en efectivo
+> 2. si
+> 3. dale
+> 4. dejemos eso para despues
+
+**Respuesta:** Armó el área de alumnas en `/app`, con una barra de navegación fija abajo en el celular (y arriba en desktop):
+- **Reservar:** elegir semana (esta o la próxima) y día, ver los horarios con los lugares libres, reservar y cancelar. Avisa si falta pagar el mes y si ya se usaron las 3 clases de la semana.
+- **Cancelación:** una ventana de confirmación explica si la clase se descuenta (menos de 12 horas) o no. Las reglas las valida la base de datos.
+- **Mis clases:** reservas del mes con navegación entre meses, estado de asistencia (presente, ausente, canceló) y botón para cancelar las próximas.
+- **Pagos:** estado de la mensualidad del mes e historial de pagos. El botón para pagar queda para el paso de Mercado Pago.
+- **Cuenta:** nombre, email, cambiar contraseña y cerrar sesión.
+
+Dejó afuera, como pidió, los pagos en efectivo y los mails de invitación. El proyecto compila sin errores. Pendiente: pagos con Mercado Pago, que necesitan credenciales de la cuenta de Mercado Pago.
+
+**Prompt 54**
+> toque bricks, en que cambia?
+
+**Respuesta:** Explicó la diferencia entre Checkout Pro (la alumna paga en una página de Mercado Pago y vuelve al sitio) y Bricks (el formulario de pago está dentro del sitio y hay que programar más). Recomendó Checkout Pro para el estudio. Aclaró que el Access Token de prueba sirve igual con cualquiera de las dos, así que probablemente no haga falta rehacer la aplicación.
+
+**Prompt 55**
+> ya los tengo
+>
+> por otro lado tengo que cumplir esto me aseguras de que estemos en buen camino?
+> (entregables E1 a E6: repo + pipeline + preview; landing responsive; formularios con fetch y validación; catálogo + API básica con checklist en PRs; CRUD en Supabase + admin; checkout + webhook)
+
+**Respuesta:** Revisó el repositorio contra los seis entregables y respondió con el estado real de cada uno. Bien encaminados en landing responsive (E2) y base de datos con panel admin (E5). Con huecos que conviene cerrar: no hay pipeline de CI, ni pull requests, ni plantilla de PR ni README (E1 y E4); los formularios tienen validación mínima y el `fetch` queda dentro de la librería de Supabase (E3); el CRUD del admin está incompleto, sin editar ni borrar ni dar de alta alumnas (E5); y el checkout con webhook está sin empezar (E6), junto con las pruebas, que todavía no existen. Propuso el orden para cerrarlos e indicó cómo guardar el Access Token de Mercado Pago como secreto en Supabase desde la terminal.
+
+**Prompt 56**
+> listo, dale si. lo que es del 5 y del 6 que no tiene que ver con mercado pago lo dejamos para mas adelante
+
+**Respuesta:** Dejó para más adelante el CRUD completo del admin y las pruebas que no son de pagos. Trabajó en una rama nueva (`feature/area-alumnas-y-pagos`) en vez de subir directo a `main`:
+- **Pagos con Mercado Pago (Checkout Pro):** dos funciones en el servidor de Supabase, ya publicadas. `mp-create-preference` crea el cobro y devuelve el link (el monto y el mes los decide el servidor) y `mp-webhook` recibe el aviso, consulta el pago directamente a Mercado Pago, verifica el monto y recién entonces activa la mensualidad. Es idempotente y verifica la firma si se configura. El botón "Pagar" de `/app/pagos` llama a la función con `fetch`, y al volver de pagar la pantalla consulta hasta que el pago figure acreditado.
+- **Pruebas:** 8 pruebas automáticas de la lógica de pagos (estados, montos, mes de cobro, firma). Probó las funciones publicadas desde afuera: sin sesión rechaza, un aviso falso se ignora, y el token de Mercado Pago funciona.
+- **E1:** acción de CI en GitHub (tipos, pruebas y build), plantilla de pull request con checklist y README del proyecto.
+- Incluye en la misma rama el área de alumnas ya armada. Abrió el pull request para ver el preview.
+Al revisar el preview detectó que la función de pago bloqueaba los pedidos hechos desde los previews de Vercel, y lo corrigió para aceptar los previews de este proyecto (con una prueba más, 9 en total).
