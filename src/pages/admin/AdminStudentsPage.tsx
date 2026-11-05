@@ -180,7 +180,7 @@ export function AdminStudentsPage() {
             ))}
           </div>
 
-          <div className={styles.filters} role="group" aria-label="Filtrar por estado">
+          <div className={styles.filters} role="group" aria-label="Filtrar por estado" style={{ marginTop: 'var(--space-3)' }}>
             {(
               [
                 ['active', 'Activas'],
