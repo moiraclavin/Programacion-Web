@@ -12,6 +12,7 @@ import { unwrap, useQuery } from '../../lib/useQuery';
 import styles from './admin.module.css';
 
 type Filter = 'all' | 'paid' | 'unpaid';
+type StatusFilter = 'active' | 'inactive' | 'all';
 
 export function AdminStudentsPage() {
   const { profile } = useAuth();
@@ -22,13 +23,14 @@ export function AdminStudentsPage() {
   const [filter, setFilter] = useState<Filter>('all');
   const [adding, setAdding] = useState(false);
   const [access, setAccess] = useState<AccessInfo | null>(null);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('active');
 
   const students = useQuery(
     () =>
       unwrap(
         supabase
           .from('profiles')
-          .select('id, first_name, last_name, phone, email')
+          .select('id, first_name, last_name, phone, email, active')
           .eq('role', 'student')
           .order('last_name')
           .order('first_name'),
@@ -67,6 +69,8 @@ export function AdminStudentsPage() {
   // ── Lista ────────────────────────────────────────────────
   const term = search.trim().toLowerCase();
   const visible = all.filter((s) => {
+    if (statusFilter === 'active' && s.active === false) return false;
+    if (statusFilter === 'inactive' && s.active !== false) return false;
     if (filter === 'paid' && !isPaid(s.id)) return false;
     if (filter === 'unpaid' && isPaid(s.id)) return false;
     return `${fullName(s)} ${s.email ?? ''}`.toLowerCase().includes(term);
@@ -176,6 +180,26 @@ export function AdminStudentsPage() {
             ))}
           </div>
 
+          <div className={styles.filters} role="group" aria-label="Filtrar por estado">
+            {(
+              [
+                ['active', 'Activas'],
+                ['inactive', 'Inactivas'],
+                ['all', 'Todas'],
+              ] as const
+            ).map(([value, label]) => (
+              <Button
+                key={value}
+                size="sm"
+                variant={statusFilter === value ? 'primary' : 'secondary'}
+                aria-pressed={statusFilter === value}
+                onClick={() => setStatusFilter(value)}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+
           <Input
             className={styles.search}
             label="Buscar por nombre o email"
@@ -190,18 +214,22 @@ export function AdminStudentsPage() {
             <ul className={styles.list}>
               {visible.map((student) => {
                 const status = membershipOf.get(student.id)?.status;
+                const inactive = student.active === false;
                 return (
                   <li key={student.id}>
-                    <Link to={`/admin/alumnas/${student.id}`} className={styles.row}>
+                    <Link to={`/admin/alumnas/${student.id}`} className={cx(styles.row, inactive && styles.muted)}>
                       <span className={styles.rowMain}>
                         <span className={styles.rowTitle}>{fullName(student)}</span>
                         <span className={styles.rowMeta}>{student.email ?? student.phone ?? 'Sin datos de contacto'}</span>
                       </span>
-                      {status ? (
-                        <Badge tone={membershipStatusTone[status]}>{membershipStatusLabel[status]}</Badge>
-                      ) : (
-                        <Badge tone="outline">Sin pagar</Badge>
-                      )}
+                      <span className={styles.rowSide}>
+                        {inactive && <Badge tone="danger">Inactiva</Badge>}
+                        {!inactive && status ? (
+                          <Badge tone={membershipStatusTone[status]}>{membershipStatusLabel[status]}</Badge>
+                        ) : !inactive ? (
+                          <Badge tone="outline">Sin pagar</Badge>
+                        ) : null}
+                      </span>
                     </Link>
                   </li>
                 );

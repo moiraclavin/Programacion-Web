@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router';
 import { Badge, Button, EmptyState, Spinner } from '../../components/ui';
 import { useAuth } from '../../features/auth/AuthProvider';
 import { AccessLinkModal, type AccessInfo } from '../../features/students/AccessLinkModal';
+import { EditStudentModal, type EditStudentData } from '../../features/students/EditStudentModal';
 import { newAccessLink } from '../../features/students/adminStudents';
 import { cx } from '../../lib/cx';
 import { formatDateTime, formatMonth, toYmd, ymdOfTimestamp } from '../../lib/dates';
@@ -25,11 +26,15 @@ export function AdminStudentPage() {
   const { session, profile: me } = useAuth();
   const isAdmin = me?.role === 'admin';
   const [access, setAccess] = useState<AccessInfo | null>(null);
+  const [editing, setEditing] = useState<EditStudentData | null>(null);
   const [linkBusy, setLinkBusy] = useState(false);
   const [linkError, setLinkError] = useState<string | null>(null);
+  const [statusBusy, setStatusBusy] = useState(false);
+  const [statusMsg, setStatusMsg] = useState<string | null>(null);
+  const [statusError, setStatusError] = useState<string | null>(null);
 
   const profile = useQuery(
-    () => unwrap(supabase.from('profiles').select('id, first_name, last_name, phone, email').eq('id', id).single()),
+    () => unwrap(supabase.from('profiles').select('id, first_name, last_name, phone, email, active').eq('id', id).single()),
     [id],
   );
   const memberships = useQuery(
@@ -75,6 +80,27 @@ export function AdminStudentPage() {
     }
   }
 
+  async function toggleActive() {
+    if (!profile.data) return;
+    setStatusBusy(true);
+    setStatusError(null);
+    setStatusMsg(null);
+    const isActive = profile.data.active;
+    if (isActive) {
+      const { data, error } = await supabase.rpc('deactivate_student', { p_student_id: id });
+      setStatusBusy(false);
+      if (error) return setStatusError(error.message);
+      setStatusMsg(`Alumna dada de baja. Se cancelaron ${data} reservas futuras.`);
+    } else {
+      const { error } = await supabase.rpc('reactivate_student', { p_student_id: id });
+      setStatusBusy(false);
+      if (error) return setStatusError(error.message);
+      setStatusMsg('Alumna reactivada.');
+    }
+    profile.reload();
+    bookings.reload();
+  }
+
   if (profile.loading && !profile.data) return <Spinner />;
   if (profile.error || !profile.data) {
     return (
@@ -102,10 +128,54 @@ export function AdminStudentPage() {
       <Link to="/admin/alumnas" className={styles.back}>
         ← Volver a alumnas
       </Link>
-      <h1 className={styles.title}>{fullName(profile.data)}</h1>
+      <div className={styles.titleRow}>
+        <h1 className={styles.title}>{fullName(profile.data)}</h1>
+        {isAdmin && (
+          <Button variant="secondary" size="sm" onClick={() => setEditing(profile.data ?? null)}>
+            Editar
+          </Button>
+        )}
+      </div>
       <p className={styles.subtitle}>
         {[profile.data.email, profile.data.phone].filter(Boolean).join(' · ') || 'Sin datos de contacto'}
+        {profile.data.active === false && (
+          <>
+            {' · '}
+            <Badge tone="danger">Inactiva</Badge>
+          </>
+        )}
       </p>
+
+      {isAdmin && (
+        <section className={styles.section} aria-label="Estado de la cuenta">
+          <h2 className={styles.sectionTitle}>Estado de la cuenta</h2>
+          <p className={styles.rowMeta}>
+            {profile.data.active
+              ? 'La alumna está activa: puede reservar clases y pagar mensualidades.'
+              : 'La alumna está dada de baja: no puede reservar ni pagar. Sus datos y su historial se conservan.'}
+          </p>
+          <div className={styles.actions} style={{ marginTop: 'var(--space-4)' }}>
+            <Button
+              variant={profile.data.active ? 'danger' : 'secondary'}
+              size="sm"
+              loading={statusBusy}
+              onClick={toggleActive}
+            >
+              {profile.data.active ? 'Dar de baja' : 'Reactivar'}
+            </Button>
+          </div>
+          {statusMsg && (
+            <p className={cx(styles.alert, styles.alertOk)} role="status" style={{ marginTop: 'var(--space-4)' }}>
+              {statusMsg}
+            </p>
+          )}
+          {statusError && (
+            <p className={cx(styles.alert, styles.alertError)} role="alert" style={{ marginTop: 'var(--space-4)' }}>
+              {statusError}
+            </p>
+          )}
+        </section>
+      )}
 
       {isAdmin && (
         <section className={styles.section} aria-label="Acceso">
@@ -201,6 +271,7 @@ export function AdminStudentPage() {
         )}
       </section>
       <AccessLinkModal access={access} onClose={() => setAccess(null)} />
+      <EditStudentModal student={editing} onClose={() => setEditing(null)} onSaved={() => profile.reload()} />
     </>
   );
 }

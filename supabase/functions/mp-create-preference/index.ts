@@ -53,6 +53,9 @@ Deno.serve(async (req) => {
   if (userError || !userData.user) return json({ error: 'Tu sesión venció. Volvé a ingresar.' }, 401, origin);
   const user = userData.user;
 
+  const { data: studentProfile } = await admin.from('profiles').select('active').eq('id', user.id).single();
+  if (studentProfile?.active === false) return json({ error: 'Tu cuenta está desactivada. Contactá al estudio.' }, 403, origin);
+
   // 2. Cuánto y qué mes se cobra.
   const { data: settings, error: settingsError } = await admin.from('studio_settings').select('monthly_fee').single();
   if (settingsError) return json({ error: 'No pudimos leer el valor de la mensualidad' }, 500, origin);

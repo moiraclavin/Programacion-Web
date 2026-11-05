@@ -1,8 +1,8 @@
 // Recibe los avisos de Mercado Pago y deja el pago y la mensualidad al día.
 //
 // Nunca se confía en lo que dice la notificación: se usa solo el id del pago para consultarlo
-// directamente a Mercado Pago con nuestro token. Si MP_WEBHOOK_SECRET está configurado,
-// además se verifica la firma. Es idempotente: recibir el mismo aviso dos veces da el mismo resultado.
+// directamente a Mercado Pago con nuestro token. La firma se verifica siempre con MP_WEBHOOK_SECRET
+// (obligatorio). Es idempotente: recibir el mismo aviso dos veces da el mismo resultado.
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { amountsMatch, mapPaymentStatus, verifySignature } from '../_shared/mercadopago.ts';
@@ -30,15 +30,18 @@ Deno.serve(async (req) => {
   if (type !== 'payment' || !dataId) return reply({ ignored: 'No es un aviso de pago' });
 
   const secret = Deno.env.get('MP_WEBHOOK_SECRET');
-  if (secret) {
-    const valid = await verifySignature({
-      secret,
-      signatureHeader: req.headers.get('x-signature'),
-      requestId: req.headers.get('x-request-id'),
-      dataId: url.searchParams.get('data.id') ?? dataId,
-    });
-    if (!valid) return reply({ error: 'Firma inválida' }, 401);
+  if (!secret) {
+    console.error('MP_WEBHOOK_SECRET no está configurado');
+    return reply({ error: 'Error de configuración del servidor' }, 500);
   }
+
+  const valid = await verifySignature({
+    secret,
+    signatureHeader: req.headers.get('x-signature'),
+    requestId: req.headers.get('x-request-id'),
+    dataId: url.searchParams.get('data.id') ?? dataId,
+  });
+  if (!valid) return reply({ error: 'Firma inválida' }, 401);
 
   // Se consulta el pago a Mercado Pago: esa respuesta es la única fuente de verdad.
   const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments/${encodeURIComponent(dataId)}`, {

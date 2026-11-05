@@ -8,9 +8,8 @@ import { Button, Input, Spinner } from '../../components/ui';
 import { useAuth } from '../../features/auth/AuthProvider';
 import { authErrorMessage } from '../../features/auth/errors';
 import { supabase } from '../../lib/supabase';
+import { isValidPassword } from '../../lib/validation';
 import styles from './AuthPage.module.css';
-
-const MIN_LENGTH = 8;
 
 /**
  * Destino del botón de los mails de invitación y de "olvidé mi contraseña".
@@ -48,8 +47,8 @@ export function SetPasswordPage() {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError(null);
-    if (password.length < MIN_LENGTH) {
-      setError(`La contraseña tiene que tener al menos ${MIN_LENGTH} caracteres.`);
+    if (!isValidPassword(password)) {
+      setError('La contraseña tiene que tener al menos 8 caracteres, con al menos una letra y un número.');
       return;
     }
     if (password !== confirm) {
@@ -101,7 +100,7 @@ export function SetPasswordPage() {
           label="Contraseña nueva"
           type="password"
           autoComplete="new-password"
-          hint={`Al menos ${MIN_LENGTH} caracteres.`}
+          hint="Al menos 8 caracteres, con una letra y un número."
           required
           value={password}
           onChange={(event) => setPassword(event.target.value)}

@@ -7,6 +7,7 @@ import { Button, Input } from '../../components/ui';
 import { useAuth } from '../../features/auth/AuthProvider';
 import { authErrorMessage } from '../../features/auth/errors';
 import { supabase } from '../../lib/supabase';
+import { isValidEmail } from '../../lib/validation';
 import styles from './AuthPage.module.css';
 
 export function LoginPage() {
@@ -18,6 +19,7 @@ export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
   const [submitting, setSubmitting] = useState(false);
 
   if (session) return <Navigate to={from} replace />;
@@ -25,6 +27,14 @@ export function LoginPage() {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError(null);
+
+    const errors: { email?: string; password?: string } = {};
+    if (!email.trim()) errors.email = 'Escribí tu email.';
+    else if (!isValidEmail(email)) errors.email = 'Revisá el email: tiene que ser como nombre@correo.com.';
+    if (!password) errors.password = 'Escribí tu contraseña.';
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
     setSubmitting(true);
     const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
     setSubmitting(false);
@@ -53,6 +63,7 @@ export function LoginPage() {
             required
             value={email}
             onChange={(event) => setEmail(event.target.value)}
+            error={fieldErrors.email}
           />
           <Input
             label="Contraseña"
@@ -61,6 +72,7 @@ export function LoginPage() {
             required
             value={password}
             onChange={(event) => setPassword(event.target.value)}
+            error={fieldErrors.password}
           />
           <Button type="submit" size="lg" fullWidth loading={submitting} disabled={!email || !password}>
             Ingresar

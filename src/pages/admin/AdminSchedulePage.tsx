@@ -2,8 +2,11 @@ import { useState, type FormEvent } from 'react';
 import { Badge, Button, EmptyState, Input, Select, Spinner } from '../../components/ui';
 import { studio } from '../../content/studio';
 import { useAuth } from '../../features/auth/AuthProvider';
+import { EditInstructorModal, type EditInstructorData } from '../../features/calendar/EditInstructorModal';
+import { useStudioSettings } from '../../features/studio/useStudioSettings';
 import { cx } from '../../lib/cx';
 import { addDays, mondayOf, toYmd, weekdayLabel } from '../../lib/dates';
+import { formatMoney } from '../../lib/labels';
 import { supabase } from '../../lib/supabase';
 import { unwrap, useQuery } from '../../lib/useQuery';
 import styles from './admin.module.css';
@@ -30,9 +33,16 @@ export function AdminSchedulePage() {
     [],
   );
 
+  const settings = useStudioSettings();
+
   const [error, setError] = useState<string | null>(null);
   const [generating, setGenerating] = useState<'this' | 'next' | null>(null);
   const [generated, setGenerated] = useState<string | null>(null);
+
+  // Mensualidad
+  const [feeInput, setFeeInput] = useState('');
+  const [savingFee, setSavingFee] = useState(false);
+  const [feeMsg, setFeeMsg] = useState<string | null>(null);
 
   // Formulario de horario
   const [weekday, setWeekday] = useState('1');
@@ -45,6 +55,7 @@ export function AdminSchedulePage() {
   const [name, setName] = useState('');
   const [specialty, setSpecialty] = useState('');
   const [savingInstructor, setSavingInstructor] = useState(false);
+  const [editingInstructor, setEditingInstructor] = useState<EditInstructorData | null>(null);
 
   async function generate(which: 'this' | 'next') {
     const monday = addDays(mondayOf(toYmd()), which === 'next' ? 7 : 0);
@@ -83,6 +94,13 @@ export function AdminSchedulePage() {
     templates.reload();
   }
 
+  async function toggleInstructor(id: string, active: boolean) {
+    setError(null);
+    const { error: updateError } = await supabase.from('instructors').update({ active }).eq('id', id);
+    if (updateError) return setError(updateError.message);
+    instructors.reload();
+  }
+
   async function addInstructor(event: FormEvent) {
     event.preventDefault();
     setError(null);
@@ -95,6 +113,24 @@ export function AdminSchedulePage() {
     setName('');
     setSpecialty('');
     instructors.reload();
+  }
+
+  async function saveFee(event: FormEvent) {
+    event.preventDefault();
+    setError(null);
+    setFeeMsg(null);
+    const value = Number(feeInput);
+    if (!Number.isFinite(value) || value <= 0) {
+      setError('El valor tiene que ser un número mayor a 0.');
+      return;
+    }
+    setSavingFee(true);
+    const { error: updateError } = await supabase.from('studio_settings').update({ monthly_fee: value }).eq('id', true);
+    setSavingFee(false);
+    if (updateError) return setError(updateError.message);
+    setFeeMsg('Valor actualizado.');
+    setFeeInput('');
+    settings.reload();
   }
 
   const activeInstructors = instructors.data?.filter((i) => i.active) ?? [];
@@ -110,6 +146,38 @@ export function AdminSchedulePage() {
         <p className={cx(styles.alert, styles.alertError)} role="alert" style={{ marginTop: 'var(--space-6)' }}>
           {error}
         </p>
+      )}
+
+      {isAdmin && (
+        <section className={styles.section} aria-label="Mensualidad">
+          <h2 className={styles.sectionTitle}>Valor de la mensualidad</h2>
+          <p className={styles.rowMeta}>
+            Valor actual: <strong>{settings.data ? formatMoney(settings.data.monthly_fee) : '…'}</strong>.
+            El cambio aplica a pagos nuevos y no modifica los montos ya registrados.
+          </p>
+          <form className={styles.form} onSubmit={saveFee} style={{ marginTop: 'var(--space-4)' }}>
+            <Input
+              label="Nuevo valor ($)"
+              type="number"
+              inputMode="decimal"
+              min={1}
+              step="0.01"
+              value={feeInput}
+              onChange={(e) => setFeeInput(e.target.value)}
+              placeholder={settings.data ? String(settings.data.monthly_fee) : ''}
+            />
+            <div className={cx(styles.formActions, styles.formWide)}>
+              <Button type="submit" loading={savingFee} disabled={!feeInput}>
+                Actualizar valor
+              </Button>
+            </div>
+          </form>
+          {feeMsg && (
+            <p className={cx(styles.alert, styles.alertOk)} role="status" style={{ marginTop: 'var(--space-4)' }}>
+              {feeMsg}
+            </p>
+          )}
+        </section>
       )}
 
       {isAdmin && (
@@ -214,10 +282,23 @@ export function AdminSchedulePage() {
         ) : (
           <ul className={styles.list}>
             {instructors.data?.map((instructor) => (
-              <li key={instructor.id} className={styles.row}>
+              <li key={instructor.id} className={cx(styles.row, !instructor.active && styles.muted)}>
                 <span className={styles.rowMain}>
                   <span className={styles.rowTitle}>{instructor.name}</span>
                   {instructor.specialty && <span className={styles.rowMeta}>{instructor.specialty}</span>}
+                </span>
+                <span className={styles.rowSide}>
+                  {!instructor.active && <Badge tone="outline">Inactiva</Badge>}
+                  {isAdmin && (
+                    <>
+                      <Button variant="ghost" size="sm" onClick={() => setEditingInstructor(instructor)}>
+                        Editar
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => toggleInstructor(instructor.id, !instructor.active)}>
+                        {instructor.active ? 'Desactivar' : 'Activar'}
+                      </Button>
+                    </>
+                  )}
                 </span>
               </li>
             ))}
@@ -236,6 +317,11 @@ export function AdminSchedulePage() {
           </form>
         )}
       </section>
+      <EditInstructorModal
+        instructor={editingInstructor}
+        onClose={() => setEditingInstructor(null)}
+        onSaved={() => instructors.reload()}
+      />
     </>
   );
 }
