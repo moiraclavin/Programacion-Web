@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Button, Input, Modal } from '../../components/ui';
 import { isValidName, isValidPhone } from '../../lib/validation';
 import { supabase } from '../../lib/supabase';
@@ -35,14 +35,22 @@ function validate(fields: Fields): Partial<Record<keyof Fields, string>> {
 }
 
 export function EditStudentModal({ student, onClose, onSaved }: EditStudentModalProps) {
-  const [fields, setFields] = useState<Fields>({
-    firstName: student?.first_name ?? '',
-    lastName: student?.last_name ?? '',
-    phone: student?.phone ?? '',
-  });
+  const [fields, setFields] = useState<Fields>({ firstName: '', lastName: '', phone: '' });
   const [touched, setTouched] = useState(false);
   const [saving, setSaving] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (student) {
+      setFields({
+        firstName: student.first_name ?? '',
+        lastName: student.last_name ?? '',
+        phone: student.phone ?? '',
+      });
+      setTouched(false);
+      setServerError(null);
+    }
+  }, [student]);
 
   const errors = validate(fields);
   const shown = touched ? errors : {};
