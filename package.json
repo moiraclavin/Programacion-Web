@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
-    "test": "node --test supabase/functions/_shared/mercadopago.test.ts src/lib/dates.test.ts src/lib/phone.test.ts src/lib/months.test.ts"
+    "test": "node --test supabase/functions/_shared/mercadopago.test.ts src/lib/dates.test.ts src/lib/phone.test.ts src/lib/months.test.ts src/lib/validation.test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",

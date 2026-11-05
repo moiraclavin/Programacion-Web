@@ -72,7 +72,12 @@ Deno.serve(async (req) => {
     const phone = clean(body.phone, 30);
 
     if (!EMAIL.test(email)) return json({ error: 'El email no es válido.' }, 400, origin);
-    if (!firstName || !lastName) return json({ error: 'Faltan el nombre y el apellido.' }, 400, origin);
+    if (!firstName || firstName.length < 2) return json({ error: 'El nombre tiene que tener al menos 2 caracteres.' }, 400, origin);
+    if (!lastName || lastName.length < 2) return json({ error: 'El apellido tiene que tener al menos 2 caracteres.' }, 400, origin);
+    if (phone) {
+      const digits = phone.replace(/\D/g, '');
+      if (digits.length < 10 || digits.length > 15) return json({ error: 'Revisá el celular: tiene que tener código de área y número.' }, 400, origin);
+    }
 
     // generateLink "invite" crea el usuario (sin contraseña) y devuelve el código del link.
     // El perfil lo crea solo el trigger de la base, con estos datos.

@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Button, Input, Modal } from '../../components/ui';
-import { isValidEmail } from '../../lib/validation';
-import { whatsappNumber } from '../../lib/phone';
+import { isValidEmail, isValidName, isValidPhone } from '../../lib/validation';
 import { useAuth } from '../auth/AuthProvider';
 import { createStudent } from './adminStudents';
 import type { AccessInfo } from './AccessLinkModal';
@@ -25,10 +24,12 @@ const EMPTY: Fields = { firstName: '', lastName: '', email: '', phone: '' };
 function validate(fields: Fields): Partial<Record<keyof Fields, string>> {
   const errors: Partial<Record<keyof Fields, string>> = {};
   if (!fields.firstName.trim()) errors.firstName = 'Escribí el nombre.';
+  else if (!isValidName(fields.firstName)) errors.firstName = 'El nombre tiene que tener entre 2 y 80 caracteres.';
   if (!fields.lastName.trim()) errors.lastName = 'Escribí el apellido.';
+  else if (!isValidName(fields.lastName)) errors.lastName = 'El apellido tiene que tener entre 2 y 80 caracteres.';
   if (!fields.email.trim()) errors.email = 'Escribí el email: es su usuario para ingresar.';
   else if (!isValidEmail(fields.email)) errors.email = 'Revisá el email: tiene que ser como nombre@correo.com.';
-  if (fields.phone.trim() && !whatsappNumber(fields.phone)) {
+  if (fields.phone.trim() && !isValidPhone(fields.phone)) {
     errors.phone = 'Revisá el celular: tiene que tener código de área y número, por ejemplo 11 5555 5555.';
   }
   return errors;
