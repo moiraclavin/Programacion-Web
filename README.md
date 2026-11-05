@@ -14,7 +14,7 @@ Proyecto de la materia Programación Web (ITBA).
 |---|---|---|
 | Institucional | `/`, `/nosotros`, `/profesoras`, `/estudio`, `/contacto` | Todos |
 | Alumnas | `/app/reservar`, `/app/mis-clases`, `/app/pagos`, `/app/cuenta` | Alumnas con sesión |
-| Panel | `/admin` (agenda en calendario, clase, horarios, alumnas con métricas) | Admin y profesoras (las altas y cancelaciones, solo admin) |
+| Panel | `/admin` (agenda en calendario, clase, horarios, alumnas con métricas, valor de la mensualidad) | Admin y profesoras (altas, bajas, edición de alumnas y profesoras, y cancelaciones, solo admin) |
 
 Reglas del estudio: clases de 1 hora con cupo limitado, máximo 3 clases por semana por alumna,
 cancelación sin costo hasta 12 horas antes (después, la clase se descuenta), y reservas solo con el mes pagado.
@@ -108,6 +108,7 @@ erDiagram
         text last_name
         text phone
         user_role role
+        boolean active
         timestamptz created_at
     }
 
@@ -225,6 +226,8 @@ evitar condiciones de carrera (por ejemplo, dos reservas simultáneas que supere
 | `mark_attendance(booking_id, status)` | Toma asistencia (presente o ausente). Solo staff. |
 | `generate_sessions(week_start)` | Crea las clases de una semana a partir de las plantillas activas. Solo admin. |
 | `cancel_session(session_id)` | Cancela una clase entera y libera las reservas de las alumnas. Solo admin. |
+| `deactivate_student(student_id)` | Baja lógica: desactiva el perfil y cancela reservas futuras activas. Solo admin. |
+| `reactivate_student(student_id)` | Reactiva una alumna dada de baja. Solo admin. |
 | `session_availability(from, to)` | Devuelve las clases de un rango con lugares ocupados y libres (sin revelar quién reservó). Pública. |
 
 ### Edge Functions (Deno, Supabase)
