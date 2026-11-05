@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Badge, Button, EmptyState, Input, Select, Spinner } from '../../components/ui';
 import { studio } from '../../content/studio';
 import { useAuth } from '../../features/auth/AuthProvider';
+import { EditInstructorModal, type EditInstructorData } from '../../features/calendar/EditInstructorModal';
 import { useStudioSettings } from '../../features/studio/useStudioSettings';
 import { cx } from '../../lib/cx';
 import { addDays, mondayOf, toYmd, weekdayLabel } from '../../lib/dates';
@@ -54,6 +55,7 @@ export function AdminSchedulePage() {
   const [name, setName] = useState('');
   const [specialty, setSpecialty] = useState('');
   const [savingInstructor, setSavingInstructor] = useState(false);
+  const [editingInstructor, setEditingInstructor] = useState<EditInstructorData | null>(null);
 
   async function generate(which: 'this' | 'next') {
     const monday = addDays(mondayOf(toYmd()), which === 'next' ? 7 : 0);
@@ -90,6 +92,13 @@ export function AdminSchedulePage() {
     const { error: updateError } = await supabase.from('class_templates').update({ active }).eq('id', id);
     if (updateError) return setError(updateError.message);
     templates.reload();
+  }
+
+  async function toggleInstructor(id: string, active: boolean) {
+    setError(null);
+    const { error: updateError } = await supabase.from('instructors').update({ active }).eq('id', id);
+    if (updateError) return setError(updateError.message);
+    instructors.reload();
   }
 
   async function addInstructor(event: FormEvent) {
@@ -273,10 +282,23 @@ export function AdminSchedulePage() {
         ) : (
           <ul className={styles.list}>
             {instructors.data?.map((instructor) => (
-              <li key={instructor.id} className={styles.row}>
+              <li key={instructor.id} className={cx(styles.row, !instructor.active && styles.muted)}>
                 <span className={styles.rowMain}>
                   <span className={styles.rowTitle}>{instructor.name}</span>
                   {instructor.specialty && <span className={styles.rowMeta}>{instructor.specialty}</span>}
+                </span>
+                <span className={styles.rowSide}>
+                  {!instructor.active && <Badge tone="outline">Inactiva</Badge>}
+                  {isAdmin && (
+                    <>
+                      <Button variant="ghost" size="sm" onClick={() => setEditingInstructor(instructor)}>
+                        Editar
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => toggleInstructor(instructor.id, !instructor.active)}>
+                        {instructor.active ? 'Desactivar' : 'Activar'}
+                      </Button>
+                    </>
+                  )}
                 </span>
               </li>
             ))}
@@ -295,6 +317,11 @@ export function AdminSchedulePage() {
           </form>
         )}
       </section>
+      <EditInstructorModal
+        instructor={editingInstructor}
+        onClose={() => setEditingInstructor(null)}
+        onSaved={() => instructors.reload()}
+      />
     </>
   );
 }
