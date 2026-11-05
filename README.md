@@ -51,7 +51,7 @@ npm run dev                  # http://localhost:5173
 | `VITE_SUPABASE_URL` | `.env.local` y Vercel | Pública |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | `.env.local` y Vercel | Pública: la protegen las reglas RLS |
 | `MP_ACCESS_TOKEN` | Secreto de Supabase | **Privado.** `supabase secrets set MP_ACCESS_TOKEN=...` |
-| `MP_WEBHOOK_SECRET` | Secreto de Supabase (opcional) | Si está, el webhook verifica la firma de Mercado Pago |
+| `MP_WEBHOOK_SECRET` | Secreto de Supabase | **Obligatorio.** El webhook verifica la firma de cada notificación de Mercado Pago |
 | `SITE_URL` | Secreto de Supabase (opcional) | Dirección a la que vuelve la alumna después de pagar |
 
 ## Estructura
