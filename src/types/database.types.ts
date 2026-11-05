@@ -315,6 +315,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          active: boolean
           created_at: string
           email: string | null
           first_name: string | null
@@ -324,6 +325,7 @@ export type Database = {
           role: Database["public"]["Enums"]["user_role"]
         }
         Insert: {
+          active?: boolean
           created_at?: string
           email?: string | null
           first_name?: string | null
@@ -333,6 +335,7 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
         }
         Update: {
+          active?: boolean
           created_at?: string
           email?: string | null
           first_name?: string | null
@@ -421,9 +424,11 @@ export type Database = {
         Args: { roles: Database["public"]["Enums"]["user_role"][] }
         Returns: boolean
       }
+      deactivate_student: { Args: { p_student_id: string }; Returns: number }
       generate_sessions: { Args: { p_week_start: string }; Returns: number }
       is_admin: { Args: never; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
+      reactivate_student: { Args: { p_student_id: string }; Returns: undefined }
       mark_attendance: {
         Args: {
           p_booking_id: string

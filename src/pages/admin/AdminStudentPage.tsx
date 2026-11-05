@@ -29,9 +29,12 @@ export function AdminStudentPage() {
   const [editing, setEditing] = useState<EditStudentData | null>(null);
   const [linkBusy, setLinkBusy] = useState(false);
   const [linkError, setLinkError] = useState<string | null>(null);
+  const [statusBusy, setStatusBusy] = useState(false);
+  const [statusMsg, setStatusMsg] = useState<string | null>(null);
+  const [statusError, setStatusError] = useState<string | null>(null);
 
   const profile = useQuery(
-    () => unwrap(supabase.from('profiles').select('id, first_name, last_name, phone, email').eq('id', id).single()),
+    () => unwrap(supabase.from('profiles').select('id, first_name, last_name, phone, email, active').eq('id', id).single()),
     [id],
   );
   const memberships = useQuery(
@@ -77,6 +80,27 @@ export function AdminStudentPage() {
     }
   }
 
+  async function toggleActive() {
+    if (!profile.data) return;
+    setStatusBusy(true);
+    setStatusError(null);
+    setStatusMsg(null);
+    const isActive = profile.data.active;
+    if (isActive) {
+      const { data, error } = await supabase.rpc('deactivate_student', { p_student_id: id });
+      setStatusBusy(false);
+      if (error) return setStatusError(error.message);
+      setStatusMsg(`Alumna dada de baja. Se cancelaron ${data} reservas futuras.`);
+    } else {
+      const { error } = await supabase.rpc('reactivate_student', { p_student_id: id });
+      setStatusBusy(false);
+      if (error) return setStatusError(error.message);
+      setStatusMsg('Alumna reactivada.');
+    }
+    profile.reload();
+    bookings.reload();
+  }
+
   if (profile.loading && !profile.data) return <Spinner />;
   if (profile.error || !profile.data) {
     return (
@@ -114,7 +138,44 @@ export function AdminStudentPage() {
       </div>
       <p className={styles.subtitle}>
         {[profile.data.email, profile.data.phone].filter(Boolean).join(' · ') || 'Sin datos de contacto'}
+        {profile.data.active === false && (
+          <>
+            {' · '}
+            <Badge tone="danger">Inactiva</Badge>
+          </>
+        )}
       </p>
+
+      {isAdmin && (
+        <section className={styles.section} aria-label="Estado de la cuenta">
+          <h2 className={styles.sectionTitle}>Estado de la cuenta</h2>
+          <p className={styles.rowMeta}>
+            {profile.data.active
+              ? 'La alumna está activa: puede reservar clases y pagar mensualidades.'
+              : 'La alumna está dada de baja: no puede reservar ni pagar. Sus datos y su historial se conservan.'}
+          </p>
+          <div className={styles.actions} style={{ marginTop: 'var(--space-4)' }}>
+            <Button
+              variant={profile.data.active ? 'danger' : 'secondary'}
+              size="sm"
+              loading={statusBusy}
+              onClick={toggleActive}
+            >
+              {profile.data.active ? 'Dar de baja' : 'Reactivar'}
+            </Button>
+          </div>
+          {statusMsg && (
+            <p className={cx(styles.alert, styles.alertOk)} role="status" style={{ marginTop: 'var(--space-4)' }}>
+              {statusMsg}
+            </p>
+          )}
+          {statusError && (
+            <p className={cx(styles.alert, styles.alertError)} role="alert" style={{ marginTop: 'var(--space-4)' }}>
+              {statusError}
+            </p>
+          )}
+        </section>
+      )}
 
       {isAdmin && (
         <section className={styles.section} aria-label="Acceso">
