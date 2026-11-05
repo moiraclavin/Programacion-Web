@@ -8,6 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
     "test": "node --test supabase/functions/_shared/mercadopago.test.ts src/lib/dates.test.ts src/lib/phone.test.ts src/lib/months.test.ts"
   },
   "dependencies": {
@@ -17,10 +18,14 @@
     "react-router": "^7.9.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "eslint": "^10.14.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "typescript": "~5.9.0",
+    "typescript-eslint": "^8.72.1",
     "vite": "^7.1.0"
   }
 }
