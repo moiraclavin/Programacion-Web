@@ -263,6 +263,20 @@ El rate limiting se delega en **Supabase Auth** a través de la configuración `
 - **Meses:** estado de cada mes (pagado, actual, futuro, pasado) y si se puede pagar.
 - **Validación:** email, contraseña, nombre, teléfono y capacidad.
 
+## Pruebas de seguridad manuales
+
+Casos para verificar desde el SQL Editor de Supabase o con `supabase.from(...)` autenticado como alumna.
+El trigger `protect_profile_role` bloquea los tres primeros; RLS bloquea el cuarto.
+
+| # | Caso | Comando | Resultado esperado |
+|---|---|---|---|
+| 1 | Alumna intenta cambiarse el rol | `update profiles set role = 'admin' where id = '<su id>'` | Error: "Solo un admin puede cambiar el rol" _(revisar)_ |
+| 2 | Alumna dada de baja intenta reactivarse | `update profiles set active = true where id = '<su id>'` | Error: "Solo un admin puede activar o desactivar una cuenta" _(revisar)_ |
+| 3 | Alumna intenta cambiar su email | `update profiles set email = 'otro@mail.com' where id = '<su id>'` | Error: "Solo un admin puede cambiar el email" _(revisar)_ |
+| 4 | Alumna intenta leer pagos de otra | `select * from payments where student_id = '<otro id>'` | Resultado vacío (RLS filtra por `student_id = auth.uid()`) _(revisar)_ |
+
+> Los casos marcados con _(revisar)_ no fueron ejecutados en este entorno. Verificarlos contra el proyecto real.
+
 ## Cómo trabajamos
 
 - `main` es producción: **no se sube directo**. Cada cambio va en una rama (`feature/...`, `fix/...`, `chore/...`)

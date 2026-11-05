@@ -490,3 +490,8 @@ Al revisar el preview detectó que la función de pago bloqueaba los pedidos hec
 
 Agregó pruebas de la lógica pura (horarios, celular de WhatsApp, validación de email, estado de cada mes, mes a pagar): 25 en total. La publicación de las migraciones en la base de producción fue bloqueada por el sistema de permisos, por lo que quedó como paso a correr por la usuaria.
 
+
+**Prompt 62**
+> ya estan los cambios?
+
+**Respuesta:** Revisó el estado real: el pull request #2 sigue abierto, así que el sitio publicado todavía no tiene los cambios, y comprobó si las migraciones y la función nueva estaban publicadas en Supabase.
