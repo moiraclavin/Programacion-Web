@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Button, Input, Modal } from '../../components/ui';
 import { isValidName } from '../../lib/validation';
 import { supabase } from '../../lib/supabase';
@@ -16,11 +16,20 @@ export interface EditInstructorModalProps {
 }
 
 export function EditInstructorModal({ instructor, onClose, onSaved }: EditInstructorModalProps) {
-  const [name, setName] = useState(instructor?.name ?? '');
-  const [specialty, setSpecialty] = useState(instructor?.specialty ?? '');
+  const [name, setName] = useState('');
+  const [specialty, setSpecialty] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | undefined>();
+
+  useEffect(() => {
+    if (instructor) {
+      setName(instructor.name);
+      setSpecialty(instructor.specialty ?? '');
+      setNameError(undefined);
+      setError(null);
+    }
+  }, [instructor]);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
