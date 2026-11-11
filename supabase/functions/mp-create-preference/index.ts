@@ -111,16 +111,19 @@ Deno.serve(async (req) => {
     new Date(`${period}T00:00:00Z`),
   );
 
+  const accessToken = Deno.env.get('MP_ACCESS_TOKEN')!;
+  const isTest = accessToken.startsWith('TEST-');
+
   const mpResponse = await fetch('https://api.mercadopago.com/checkout/preferences', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${Deno.env.get('MP_ACCESS_TOKEN')}`,
+      Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       items: [{ title: `Mensualidad ${monthName}`, quantity: 1, unit_price: fee, currency_id: 'ARS' }],
       external_reference: payment.id,
-      payer: { email: user.email },
+      ...(!isTest && { payer: { email: user.email } }),
       back_urls: { success: back('ok'), failure: back('error'), pending: back('pendiente') },
       // Mercado Pago solo acepta volver automáticamente a direcciones https.
       ...(base.startsWith('https://') && { auto_return: 'approved' }),
