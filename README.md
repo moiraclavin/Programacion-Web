@@ -14,7 +14,7 @@ Proyecto de la materia Programación Web (ITBA).
 |---|---|---|
 | Institucional | `/`, `/nosotros`, `/profesoras`, `/estudio`, `/contacto` | Todos |
 | Alumnas | `/app/reservar`, `/app/mis-clases`, `/app/pagos`, `/app/cuenta` | Alumnas con sesión |
-| Panel | `/admin` (agenda en calendario, clase, horarios, alumnas con métricas, valor de la mensualidad) | Admin y profesoras (altas, bajas, edición de alumnas y profesoras, y cancelaciones, solo admin) |
+| Panel | `/admin` (agenda en calendario, clase, ajustes, alumnas con métricas, valor de la mensualidad) | Admin y profesoras (altas, bajas, edición de alumnas y profesoras, y cancelaciones, solo admin) |
 
 Reglas del estudio: clases de 1 hora con cupo limitado, máximo 3 clases por semana por alumna,
 cancelación sin costo hasta 12 horas antes (después, la clase se descuenta), y reservas solo con el mes pagado.
@@ -224,7 +224,7 @@ evitar condiciones de carrera (por ejemplo, dos reservas simultáneas que supere
 | `book_session(session_id)` | Reserva una clase. Valida: clase futura, dentro del horizonte, mes pagado, cupo disponible, tope semanal. |
 | `cancel_booking(booking_id)` | Cancela una reserva propia. Si quedan más de 12 h, libera el lugar; si no, queda como cancelación tardía. |
 | `mark_attendance(booking_id, status)` | Toma asistencia (presente o ausente). Solo staff. |
-| `generate_sessions(week_start)` | Crea las clases de una semana a partir de las plantillas activas. Solo admin. |
+| `generate_sessions(week_start)` | Crea las clases de una semana a partir de las plantillas activas. Solo admin. _(Sin uso en la interfaz: las clases se crean desde la agenda.)_ |
 | `cancel_session(session_id)` | Cancela una clase entera y libera las reservas de las alumnas. Solo admin. |
 | `deactivate_student(student_id)` | Baja lógica: desactiva el perfil y cancela reservas futuras activas. Solo admin. |
 | `reactivate_student(student_id)` | Reactiva una alumna dada de baja. Solo admin. |
