@@ -1,33 +1,18 @@
 import { useState, type FormEvent } from 'react';
-import { Badge, Button, EmptyState, Input, Select, Spinner } from '../../components/ui';
-import { studio } from '../../content/studio';
+import { Badge, Button, EmptyState, Input, Spinner } from '../../components/ui';
 import { useAuth } from '../../features/auth/AuthProvider';
 import { EditInstructorModal, type EditInstructorData } from '../../features/calendar/EditInstructorModal';
 import { useStudioSettings } from '../../features/studio/useStudioSettings';
 import { cx } from '../../lib/cx';
-import { addDays, mondayOf, toYmd, weekdayLabel } from '../../lib/dates';
 import { formatMoney } from '../../lib/labels';
 import { supabase } from '../../lib/supabase';
 import { unwrap, useQuery } from '../../lib/useQuery';
 import styles from './admin.module.css';
 
-const WEEKDAYS = [1, 2, 3, 4, 5, 6, 7];
-
 export function AdminSchedulePage() {
   const { profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
 
-  const templates = useQuery(
-    () =>
-      unwrap(
-        supabase
-          .from('class_templates')
-          .select('id, weekday, start_time, duration_min, capacity, active, instructors(name)')
-          .order('weekday')
-          .order('start_time'),
-      ),
-    [],
-  );
   const instructors = useQuery(
     () => unwrap(supabase.from('instructors').select('id, name, specialty, active').order('sort_order').order('name')),
     [],
@@ -36,63 +21,17 @@ export function AdminSchedulePage() {
   const settings = useStudioSettings();
 
   const [error, setError] = useState<string | null>(null);
-  const [generating, setGenerating] = useState<'this' | 'next' | null>(null);
-  const [generated, setGenerated] = useState<string | null>(null);
 
   // Mensualidad
   const [feeInput, setFeeInput] = useState('');
   const [savingFee, setSavingFee] = useState(false);
   const [feeMsg, setFeeMsg] = useState<string | null>(null);
 
-  // Formulario de horario
-  const [weekday, setWeekday] = useState('1');
-  const [startTime, setStartTime] = useState('08:00');
-  const [capacity, setCapacity] = useState(String(studio.maxClassSize));
-  const [instructorId, setInstructorId] = useState('');
-  const [savingTemplate, setSavingTemplate] = useState(false);
-
   // Formulario de profesora
   const [name, setName] = useState('');
   const [specialty, setSpecialty] = useState('');
   const [savingInstructor, setSavingInstructor] = useState(false);
   const [editingInstructor, setEditingInstructor] = useState<EditInstructorData | null>(null);
-
-  async function generate(which: 'this' | 'next') {
-    const monday = addDays(mondayOf(toYmd()), which === 'next' ? 7 : 0);
-    setGenerating(which);
-    setGenerated(null);
-    setError(null);
-    const { data, error: rpcError } = await supabase.rpc('generate_sessions', { p_week_start: monday });
-    setGenerating(null);
-    if (rpcError) return setError(rpcError.message);
-    setGenerated(
-      data === 0
-        ? 'No se crearon clases nuevas: ya estaban creadas, o no hay horarios activos.'
-        : `Se crearon ${data} clases.`,
-    );
-  }
-
-  async function addTemplate(event: FormEvent) {
-    event.preventDefault();
-    setError(null);
-    setSavingTemplate(true);
-    const { error: insertError } = await supabase.from('class_templates').insert({
-      weekday: Number(weekday),
-      start_time: startTime,
-      capacity: Number(capacity),
-      instructor_id: instructorId || null,
-    });
-    setSavingTemplate(false);
-    if (insertError) return setError(insertError.message);
-    templates.reload();
-  }
-
-  async function toggleTemplate(id: string, active: boolean) {
-    setError(null);
-    const { error: updateError } = await supabase.from('class_templates').update({ active }).eq('id', id);
-    if (updateError) return setError(updateError.message);
-    templates.reload();
-  }
 
   async function toggleInstructor(id: string, active: boolean) {
     setError(null);
@@ -133,14 +72,10 @@ export function AdminSchedulePage() {
     settings.reload();
   }
 
-  const activeInstructors = instructors.data?.filter((i) => i.active) ?? [];
-
   return (
     <>
-      <h1 className={styles.title}>Horarios</h1>
-      <p className={styles.subtitle}>
-        El horario fijo de cada semana. Con estos horarios se generan las clases desde la Agenda.
-      </p>
+      <h1 className={styles.title}>Ajustes</h1>
+      <p className={styles.subtitle}>Valor de la mensualidad y profesoras del estudio.</p>
 
       {error && (
         <p className={cx(styles.alert, styles.alertError)} role="alert" style={{ marginTop: 'var(--space-6)' }}>
@@ -177,99 +112,6 @@ export function AdminSchedulePage() {
               {feeMsg}
             </p>
           )}
-        </section>
-      )}
-
-      {isAdmin && (
-        <section className={styles.section} aria-label="Generar clases">
-          <h2 className={styles.sectionTitle}>Generar clases desde estos horarios</h2>
-          <p className={styles.rowMeta}>
-            Crea las clases de una semana a partir de los horarios activos; las que ya existen no se duplican.
-            Las clases sueltas se agregan desde la Agenda.
-          </p>
-          <div className={styles.actions} style={{ marginTop: 'var(--space-4)' }}>
-            <Button variant="secondary" size="sm" loading={generating === 'this'} disabled={generating !== null} onClick={() => generate('this')}>
-              Esta semana
-            </Button>
-            <Button variant="secondary" size="sm" loading={generating === 'next'} disabled={generating !== null} onClick={() => generate('next')}>
-              La próxima semana
-            </Button>
-          </div>
-          {generated && (
-            <p className={cx(styles.alert, styles.alertOk)} role="status" style={{ marginTop: 'var(--space-4)' }}>
-              {generated}
-            </p>
-          )}
-        </section>
-      )}
-
-      <section className={styles.section} aria-label="Horarios semanales">
-        <h2 className={styles.sectionTitle}>Horarios semanales</h2>
-        {templates.loading && !templates.data ? (
-          <Spinner />
-        ) : templates.data?.length === 0 ? (
-          <EmptyState title="Todavía no cargaste horarios" description="Agregá el primero con el formulario de abajo." />
-        ) : (
-          <ul className={styles.list}>
-            {templates.data?.map((template) => (
-              <li key={template.id} className={cx(styles.row, !template.active && styles.muted)}>
-                <span className={styles.rowMain}>
-                  <span className={styles.rowTitle}>
-                    {weekdayLabel(template.weekday)} · {template.start_time.slice(0, 5)}
-                  </span>
-                  <span className={styles.rowMeta}>
-                    {template.instructors?.name ?? 'Sin profesora asignada'} · {template.capacity} lugares
-                  </span>
-                </span>
-                <span className={styles.rowSide}>
-                  {!template.active && <Badge tone="outline">Pausado</Badge>}
-                  {isAdmin && (
-                    <Button variant="ghost" size="sm" onClick={() => toggleTemplate(template.id, !template.active)}>
-                      {template.active ? 'Pausar' : 'Activar'}
-                    </Button>
-                  )}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      {isAdmin && (
-        <section className={styles.section} aria-label="Agregar horario">
-          <h2 className={styles.sectionTitle}>Agregar horario</h2>
-          <form className={styles.form} onSubmit={addTemplate}>
-            <Select label="Día" value={weekday} onChange={(e) => setWeekday(e.target.value)}>
-              {WEEKDAYS.map((day) => (
-                <option key={day} value={day}>
-                  {weekdayLabel(day)}
-                </option>
-              ))}
-            </Select>
-            <Input label="Hora de inicio" type="time" required value={startTime} onChange={(e) => setStartTime(e.target.value)} />
-            <Input
-              label="Lugares"
-              type="number"
-              min={1}
-              required
-              inputMode="numeric"
-              value={capacity}
-              onChange={(e) => setCapacity(e.target.value)}
-            />
-            <Select label="Profesora" value={instructorId} onChange={(e) => setInstructorId(e.target.value)}>
-              <option value="">Sin asignar</option>
-              {activeInstructors.map((instructor) => (
-                <option key={instructor.id} value={instructor.id}>
-                  {instructor.name}
-                </option>
-              ))}
-            </Select>
-            <div className={cx(styles.formActions, styles.formWide)}>
-              <Button type="submit" loading={savingTemplate} disabled={!startTime || Number(capacity) < 1}>
-                Agregar horario
-              </Button>
-            </div>
-          </form>
         </section>
       )}
 

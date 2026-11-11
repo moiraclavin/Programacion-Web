@@ -6,7 +6,7 @@ import styles from './AdminLayout.module.css';
 
 const links = [
   { to: '/admin', label: 'Agenda', end: true },
-  { to: '/admin/horarios', label: 'Horarios', end: false },
+  { to: '/admin/horarios', label: 'Ajustes', end: false },
   { to: '/admin/alumnas', label: 'Alumnas', end: false },
 ];
 
